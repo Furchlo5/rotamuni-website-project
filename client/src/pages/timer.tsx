@@ -106,7 +106,7 @@ export default function TimerPage() {
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="max-w-2xl mx-auto">
-        <div className="bg-gradient-to-r from-orange-600 to-amber-700 rounded-2xl p-6 mb-6 shadow-lg">
+        <div className="bg-gradient-to-r from-teal-500 to-cyan-600 rounded-2xl p-6 mb-6 shadow-lg">
           <div className="flex items-center gap-3">
             <Link href="/">
               <Button
@@ -120,7 +120,7 @@ export default function TimerPage() {
             </Link>
             <div className="flex-1">
               <h1 className="text-2xl md:text-3xl font-bold text-white" data-testid="text-page-title">
-                Çalışma Timer
+                Çalışılan Süre
               </h1>
               <p className="text-white/90 text-sm mt-1">
                 {loadingSessions ? (
@@ -172,7 +172,7 @@ export default function TimerPage() {
             <Button
               size="lg"
               onClick={() => setIsRunning(!isRunning)}
-              className="w-32"
+              className="w-32 bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white"
               data-testid="button-toggle-timer"
             >
               {isRunning ? (
@@ -189,9 +189,9 @@ export default function TimerPage() {
             </Button>
             <Button
               size="lg"
-              variant="default"
               onClick={handleSave}
               disabled={seconds === 0 || isRunning || saveMutation.isPending}
+              className="bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white"
               data-testid="button-save-timer"
             >
               Kaydet
@@ -201,6 +201,7 @@ export default function TimerPage() {
               variant="outline"
               onClick={handleReset}
               disabled={seconds === 0 || isRunning}
+              className="border-teal-500 text-teal-600 hover:bg-teal-50 dark:border-teal-400 dark:text-teal-400 dark:hover:bg-teal-950"
               data-testid="button-reset-timer"
             >
               <RotateCcw className="w-5 h-5 mr-2" />
