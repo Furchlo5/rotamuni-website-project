@@ -176,7 +176,7 @@ export default function AnalysisPage() {
               </div>
               <div>
                 <div className="text-sm text-muted-foreground">Çalışma Süresi</div>
-                <div className="text-2xl font-bold text-orange-400" data-testid="text-total-time">
+                <div className="text-2xl font-bold text-[#22d3ee]" data-testid="text-total-time">
                   {formatTime(totalTime)}
                 </div>
               </div>
