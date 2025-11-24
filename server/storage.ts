@@ -47,9 +47,10 @@ export class MemStorage implements IStorage {
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
-    const existing = this.users.get(userData.id);
+    const id = userData.id ?? randomUUID();
+    const existing = this.users.get(id);
     const user: User = {
-      id: userData.id,
+      id,
       email: userData.email ?? null,
       firstName: userData.firstName ?? null,
       lastName: userData.lastName ?? null,
@@ -72,8 +73,9 @@ export class MemStorage implements IStorage {
   async createTodo(insertTodo: InsertTodo): Promise<Todo> {
     const id = randomUUID();
     const todo: Todo = {
-      ...insertTodo,
       id,
+      title: insertTodo.title,
+      completed: insertTodo.completed ?? false,
     };
     this.todos.set(id, todo);
     return todo;
@@ -104,19 +106,26 @@ export class MemStorage implements IStorage {
   async upsertQuestionCount(
     data: InsertQuestionCount,
   ): Promise<QuestionCount> {
-    const key = `${data.subject}-${data.date}`;
     const existing = Array.from(this.questionCounts.values()).find(
       (qc) => qc.subject === data.subject && qc.date === data.date,
     );
 
     if (existing) {
-      const updated = { ...existing, count: data.count };
+      const updated: QuestionCount = {
+        ...existing,
+        count: data.count ?? 0,
+      };
       this.questionCounts.set(existing.id, updated);
       return updated;
     }
 
     const id = randomUUID();
-    const questionCount: QuestionCount = { ...data, id };
+    const questionCount: QuestionCount = {
+      id,
+      subject: data.subject,
+      date: data.date,
+      count: data.count ?? 0,
+    };
     this.questionCounts.set(id, questionCount);
     return questionCount;
   }

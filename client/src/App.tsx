@@ -14,7 +14,7 @@ import AnalysisPage from "@/pages/analysis";
 import NotFound from "@/pages/not-found";
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
 
   if (isLoading) {
     return (
@@ -26,7 +26,7 @@ function Router() {
 
   return (
     <>
-      <Navbar />
+      <Navbar isAuthenticated={isAuthenticated} user={user} />
       <Switch>
         {isLoading || !isAuthenticated ? (
           <Route path="/" component={Landing} />

@@ -1,9 +1,13 @@
-import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import logoImage from "@assets/logo_son_1764010143596.png";
+import type { User } from "@shared/schema";
 
-export function Navbar() {
-  const { isAuthenticated, user } = useAuth();
+interface NavbarProps {
+  isAuthenticated: boolean;
+  user: User | null | undefined;
+}
+
+export function Navbar({ isAuthenticated, user }: NavbarProps) {
 
   return (
     <nav className="bg-[#152238] border-b border-[#1e3a5f]">

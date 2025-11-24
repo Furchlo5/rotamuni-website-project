@@ -14,9 +14,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup Replit Auth
   await setupAuth(app);
 
-  // Auth endpoint - Get current user
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  // Auth endpoint - Get current user (not protected, returns null if not authenticated)
+  app.get('/api/auth/user', async (req: any, res) => {
     try {
+      if (!req.isAuthenticated() || !req.user?.claims?.sub) {
+        return res.json(null);
+      }
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       res.json(user);
