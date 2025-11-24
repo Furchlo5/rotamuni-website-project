@@ -20,14 +20,14 @@ import {
 import type { QuestionCount, TimerSession } from "@shared/schema";
 
 const COLORS = [
-  "#93c5fd",
-  "#86efac",
-  "#fde047",
-  "#fdba74",
-  "#c4b5fd",
-  "#5eead4",
+  "#14b8a6",
+  "#f97316",
+  "#06b6d4",
   "#fb923c",
-  "#f9a8d4",
+  "#0891b2",
+  "#ea580c",
+  "#22d3ee",
+  "#f59e0b",
 ];
 
 type Period = "daily" | "weekly" | "monthly";
@@ -121,7 +121,7 @@ export default function AnalysisPage() {
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="max-w-6xl mx-auto">
-        <div className="bg-gradient-to-r from-blue-300 to-blue-400 rounded-2xl p-6 mb-6 shadow-lg">
+        <div className="bg-gradient-to-r from-cyan-500 to-teal-600 rounded-2xl p-6 mb-6">
           <div className="flex items-center gap-3">
             <Link href="/">
               <Button
@@ -137,7 +137,7 @@ export default function AnalysisPage() {
               <h1 className="text-2xl md:text-3xl font-bold text-white" data-testid="text-page-title">
                 Analiz ve İstatistikler
               </h1>
-              <p className="text-blue-50 text-sm mt-1">
+              <p className="text-white/90 text-sm mt-1">
                 {periodLabels[period]} performansın
               </p>
             </div>
@@ -157,12 +157,12 @@ export default function AnalysisPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <Card className="p-6">
             <div className="flex items-start gap-3">
-              <div className="p-3 bg-blue-100 rounded-lg">
-                <Target className="w-6 h-6 text-blue-600" />
+              <div className="p-3 bg-teal-500/20 rounded-lg">
+                <Target className="w-6 h-6 text-teal-400" />
               </div>
               <div>
                 <div className="text-sm text-muted-foreground">Toplam Soru</div>
-                <div className="text-2xl font-bold" data-testid="text-total-questions">
+                <div className="text-2xl font-bold text-teal-400" data-testid="text-total-questions">
                   {totalQuestions}
                 </div>
               </div>
@@ -171,12 +171,12 @@ export default function AnalysisPage() {
 
           <Card className="p-6">
             <div className="flex items-start gap-3">
-              <div className="p-3 bg-green-100 rounded-lg">
-                <Clock className="w-6 h-6 text-green-600" />
+              <div className="p-3 bg-orange-500/20 rounded-lg">
+                <Clock className="w-6 h-6 text-orange-400" />
               </div>
               <div>
                 <div className="text-sm text-muted-foreground">Çalışma Süresi</div>
-                <div className="text-2xl font-bold" data-testid="text-total-time">
+                <div className="text-2xl font-bold text-orange-400" data-testid="text-total-time">
                   {formatTime(totalTime)}
                 </div>
               </div>
@@ -185,12 +185,12 @@ export default function AnalysisPage() {
 
           <Card className="p-6">
             <div className="flex items-start gap-3">
-              <div className="p-3 bg-purple-100 rounded-lg">
-                <TrendingUp className="w-6 h-6 text-purple-600" />
+              <div className="p-3 bg-cyan-500/20 rounded-lg">
+                <TrendingUp className="w-6 h-6 text-cyan-400" />
               </div>
               <div>
                 <div className="text-sm text-muted-foreground">Ders Sayısı</div>
-                <div className="text-2xl font-bold" data-testid="text-subject-count">
+                <div className="text-2xl font-bold text-cyan-400" data-testid="text-subject-count">
                   {new Set([
                     ...questionCounts.filter((c) => c.count > 0).map((c) => c.subject),
                     ...timerSessions.map((s) => s.subject),

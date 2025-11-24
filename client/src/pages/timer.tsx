@@ -106,7 +106,7 @@ export default function TimerPage() {
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="max-w-2xl mx-auto">
-        <div className="bg-gradient-to-r from-blue-300 to-blue-400 rounded-2xl p-6 mb-6 shadow-lg">
+        <div className="bg-gradient-to-r from-orange-600 to-amber-700 rounded-2xl p-6 mb-6">
           <div className="flex items-center gap-3">
             <Link href="/">
               <Button
@@ -122,7 +122,7 @@ export default function TimerPage() {
               <h1 className="text-2xl md:text-3xl font-bold text-white" data-testid="text-page-title">
                 Çalışma Timer
               </h1>
-              <p className="text-blue-50 text-sm mt-1">
+              <p className="text-white/90 text-sm mt-1">
                 {loadingSessions ? (
                   <span className="inline-block w-32 h-4 bg-blue-200/50 rounded animate-pulse" />
                 ) : (

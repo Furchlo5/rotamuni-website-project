@@ -81,7 +81,7 @@ export default function TodoPage() {
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="max-w-2xl mx-auto">
-        <div className="bg-gradient-to-r from-blue-300 to-blue-400 rounded-2xl p-6 mb-6 shadow-lg">
+        <div className="bg-gradient-to-r from-orange-500 to-amber-600 rounded-2xl p-6 mb-6">
           <div className="flex items-center gap-3">
             <Link href="/">
               <Button
@@ -97,7 +97,7 @@ export default function TodoPage() {
               <h1 className="text-2xl md:text-3xl font-bold text-white" data-testid="text-page-title">
                 To-Do List
               </h1>
-              <p className="text-blue-50 text-sm mt-1">
+              <p className="text-white/90 text-sm mt-1">
                 {completedCount} / {todos.length} görev tamamlandı
               </p>
             </div>
