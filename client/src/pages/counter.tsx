@@ -119,8 +119,7 @@ export default function CounterPage() {
               Enter the number of questions you've solved today
             </p>
             
-            {/* Input Field */}
-            {/* burada focus:border ve focus:ring turkuaz yapıldı */}
+            {/* Input Field - burada focus:border ve focus:ring turkuaz yapıldı */}
             <div className="mb-6">
               <Input
                 type="text"
