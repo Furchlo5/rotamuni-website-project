@@ -22,9 +22,11 @@ export interface IStorage {
   deleteTodo(id: string): Promise<boolean>;
 
   getQuestionCountsByDate(date: string): Promise<QuestionCount[]>;
+  getQuestionCountsByDateRange(startDate: string, endDate: string): Promise<QuestionCount[]>;
   upsertQuestionCount(data: InsertQuestionCount): Promise<QuestionCount>;
 
   getTimerSessionsByDate(date: string): Promise<TimerSession[]>;
+  getTimerSessionsByDateRange(startDate: string, endDate: string): Promise<TimerSession[]>;
   createTimerSession(session: InsertTimerSession): Promise<TimerSession>;
 }
 
@@ -122,6 +124,24 @@ export class MemStorage implements IStorage {
     return Array.from(this.timerSessions.values()).filter((ts) => ts.date === date);
   }
 
+  async getQuestionCountsByDateRange(
+    startDate: string,
+    endDate: string,
+  ): Promise<QuestionCount[]> {
+    return Array.from(this.questionCounts.values()).filter(
+      (qc) => qc.date >= startDate && qc.date <= endDate,
+    );
+  }
+
+  async getTimerSessionsByDateRange(
+    startDate: string,
+    endDate: string,
+  ): Promise<TimerSession[]> {
+    return Array.from(this.timerSessions.values()).filter(
+      (ts) => ts.date >= startDate && ts.date <= endDate,
+    );
+  }
+
   async createTimerSession(
     insertSession: InsertTimerSession,
   ): Promise<TimerSession> {
@@ -137,7 +157,7 @@ export class MemStorage implements IStorage {
 
 import { drizzle } from "drizzle-orm/neon-serverless";
 import { Pool, neonConfig } from "@neondatabase/serverless";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import * as schema from "@shared/schema";
 import ws from "ws";
 
@@ -244,6 +264,36 @@ export class DbStorage implements IStorage {
       .select()
       .from(schema.timerSessions)
       .where(eq(schema.timerSessions.date, date));
+  }
+
+  async getQuestionCountsByDateRange(
+    startDate: string,
+    endDate: string,
+  ): Promise<QuestionCount[]> {
+    return await this.db
+      .select()
+      .from(schema.questionCounts)
+      .where(
+        and(
+          sql`${schema.questionCounts.date} >= ${startDate}`,
+          sql`${schema.questionCounts.date} <= ${endDate}`,
+        ),
+      );
+  }
+
+  async getTimerSessionsByDateRange(
+    startDate: string,
+    endDate: string,
+  ): Promise<TimerSession[]> {
+    return await this.db
+      .select()
+      .from(schema.timerSessions)
+      .where(
+        and(
+          sql`${schema.timerSessions.date} >= ${startDate}`,
+          sql`${schema.timerSessions.date} <= ${endDate}`,
+        ),
+      );
   }
 
   async createTimerSession(

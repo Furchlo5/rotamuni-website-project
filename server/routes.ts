@@ -115,6 +115,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/stats", async (req, res) => {
+    try {
+      const { startDate, endDate } = req.query;
+      
+      if (!startDate || !endDate) {
+        res.status(400).json({ error: "startDate and endDate are required" });
+        return;
+      }
+
+      const [questionCounts, timerSessions] = await Promise.all([
+        storage.getQuestionCountsByDateRange(startDate as string, endDate as string),
+        storage.getTimerSessionsByDateRange(startDate as string, endDate as string),
+      ]);
+
+      res.json({ questionCounts, timerSessions });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch statistics" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
