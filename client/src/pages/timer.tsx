@@ -133,7 +133,7 @@ export default function TimerPage() {
           </div>
         </div>
 
-        <Card className="p-6 md:p-8 mb-6">
+        <Card className="p-6 md:p-8 mb-6 shadow-md">
           <div className="mb-6">
             <label className="text-sm font-medium text-muted-foreground mb-2 block">
               Çalışılan Ders
@@ -210,7 +210,7 @@ export default function TimerPage() {
         </Card>
 
         {loadingSessions ? (
-          <Card className="p-4">
+          <Card className="p-4 shadow-md">
             <div className="space-y-2">
               {[1, 2, 3].map((i) => (
                 <div
@@ -224,7 +224,7 @@ export default function TimerPage() {
             </div>
           </Card>
         ) : errorSessions ? (
-          <Card className="p-6">
+          <Card className="p-6 shadow-md">
             <div className="text-center">
               <p className="text-destructive font-semibold mb-1">
                 Seanslar yüklenemedi
@@ -235,7 +235,7 @@ export default function TimerPage() {
             </div>
           </Card>
         ) : sessions.length > 0 ? (
-          <Card className="p-4">
+          <Card className="p-4 shadow-md">
             <h3 className="font-semibold mb-3">Bugünkü Seanslar</h3>
             <div className="space-y-2">
               {sessions.slice(-5).reverse().map((session, idx) => (

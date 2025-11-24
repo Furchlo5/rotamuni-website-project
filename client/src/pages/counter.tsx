@@ -113,7 +113,7 @@ export default function CounterPage() {
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[1, 2, 3, 4].map((i) => (
-              <Card key={i} className="overflow-hidden">
+              <Card key={i} className="overflow-hidden shadow-md">
                 <div className="bg-muted h-16 animate-pulse" />
                 <div className="p-4 space-y-4">
                   <div className="h-12 bg-muted rounded animate-pulse mx-auto w-24" />

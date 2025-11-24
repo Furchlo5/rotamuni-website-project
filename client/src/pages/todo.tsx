@@ -104,7 +104,7 @@ export default function TodoPage() {
           </div>
         </div>
 
-        <Card className="p-4 mb-4">
+        <Card className="p-4 mb-4 shadow-md">
           <div className="flex gap-2">
             <Input
               placeholder="Yeni görev ekle..."
@@ -128,7 +128,7 @@ export default function TodoPage() {
           {isLoading ? (
             <>
               {[1, 2, 3].map((i) => (
-                <Card key={i} className="p-4">
+                <Card key={i} className="p-4 shadow-md">
                   <div className="flex items-center gap-3">
                     <div className="w-6 h-6 bg-muted rounded-full animate-pulse" />
                     <div className="flex-1 h-5 bg-muted rounded animate-pulse" />
@@ -138,7 +138,7 @@ export default function TodoPage() {
               ))}
             </>
           ) : todos.length === 0 ? (
-            <Card className="p-8">
+            <Card className="p-8 shadow-md">
               <div className="text-center">
                 <ClipboardList className="w-16 h-16 mx-auto text-muted-foreground mb-3" />
                 <p className="text-muted-foreground">
@@ -150,7 +150,7 @@ export default function TodoPage() {
             todos.map((todo) => (
               <Card
                 key={todo.id}
-                className="p-4 transition-all hover:shadow-md"
+                className="p-4 shadow-md transition-all hover:shadow-lg"
                 data-testid={`todo-item-${todo.id}`}
               >
                 <div className="flex items-center gap-3">
