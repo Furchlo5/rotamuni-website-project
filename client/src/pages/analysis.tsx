@@ -171,12 +171,12 @@ export default function AnalysisPage() {
 
           <Card className="p-6">
             <div className="flex items-start gap-3">
-              <div className="p-3 rounded-lg bg-[#06b6d433]">
+              <div className="p-3 bg-orange-500/20 rounded-lg">
                 <Clock className="w-6 h-6 text-orange-400" />
               </div>
               <div>
                 <div className="text-sm text-muted-foreground">Çalışma Süresi</div>
-                <div className="text-2xl font-bold text-[#22d3ee]" data-testid="text-total-time">
+                <div className="text-2xl font-bold text-orange-400" data-testid="text-total-time">
                   {formatTime(totalTime)}
                 </div>
               </div>
