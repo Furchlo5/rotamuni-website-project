@@ -1,21 +1,22 @@
 # Design Guidelines: YKS Study Tracking Assistant
 
 ## Design Approach
-**Modern Dark Mode Theme**: The application follows a sophisticated dark mode aesthetic with vibrant orange gradients and teal accents. Design emphasizes modern, clean visuals appealing to young students while maintaining a professional and focused study environment.
+**Modern Dark Mode Theme**: The application follows a sophisticated dark mode aesthetic with vibrant orange/amber gradients and teal/cyan accents. Design emphasizes modern, clean visuals appealing to young students while maintaining a professional and focused study environment. All elements use subtle shadows for depth and rounded-2xl corners for a contemporary look.
 
 ## Core Design Principles
-- Mobile-first responsive design
-- Modern dark mode aesthetic
-- Vibrant accent colors for engagement
-- Clear visual hierarchy with generous spacing
-- Smooth, purposeful animations
+- Mobile-first responsive design with consistent padding
+- Persistent dark mode aesthetic (always enabled)
+- Vibrant gradient accents for engagement and visual interest
+- Clear visual hierarchy with generous spacing and shadows
+- Smooth, purposeful animations with brightness transitions
+- Consistent shadow usage (shadow-lg for headers, shadow-md for cards)
 
 ## Typography
-- **Primary Font**: Modern, clean sans-serif (Inter or default system fonts)
-- **Headings**: Font weight 600-700, white or very light gray
+- **Primary Font**: Poppins (loaded from Google Fonts)
+- **Headings**: Font weight 600-700, pure white text for maximum contrast
 - **Body Text**: Font weight 400-500, comfortable reading size
-- **Subtext/Descriptions**: Muted gray tones for secondary information
-- **Card Labels**: Font weight 500-600, centered alignment
+- **Subtext/Descriptions**: Muted gray (text-muted-foreground) for secondary information
+- **Card Labels**: Font weight 500-600, centered alignment with white text on gradients
 
 ## Color Palette (Dark Mode)
 
@@ -47,12 +48,18 @@
 ## Component Specifications
 
 ### Header Component
-- Positioned at top of page with margin from edges
-- Border radius: rounded-xl or rounded-2xl
-- Background: Dark surface with subtle orange gradient accent
-- Content: "YKS Yol Arkadaşım" or "Hoşgeldin [User]" text in white
-- Padding: Generous vertical and horizontal spacing
-- Text: Large, centered, welcoming
+- Positioned at top of page with consistent margin (mb-6 or mb-8)
+- Border radius: rounded-2xl exclusively
+- Background: Vibrant gradients (bg-gradient-to-r) with shadow-lg for prominence
+  - Dashboard: from-orange-500 to-amber-600
+  - To-Do: from-orange-500 to-amber-600
+  - Counter: from-teal-500 to-cyan-600
+  - Timer: from-orange-600 to-amber-700
+  - Analysis: from-cyan-500 to-teal-600
+- Content: "YKS Yol Arkadaşım" or page titles in white
+- Padding: p-6 for sub-pages, p-8 for dashboard
+- Text: Large (text-2xl md:text-3xl for pages, text-3xl md:text-4xl for dashboard), white, font-bold
+- Subtitle: text-white/90 for translucent effect
 
 ### Navigation Grid (Dashboard)
 - Layout: 2-column, 2-row grid (grid-cols-2)
@@ -61,20 +68,21 @@
 
 ### Navigation Cards
 - Shape: Square or slightly rectangular with rounded-2xl corners
-- Background: Dark surface with vibrant gradients
-  - To-Do: Orange gradient (from-orange-500 to-amber-600)
-  - Counter: Teal/Orange blend
-  - Timer: Orange/Amber variations
-  - Analysis: Teal accent
-- Depth: Use color tone differences instead of heavy shadows
-- Icon: Large Lucide-React icon centered at top in white/light color
+- Background: Vibrant gradients (bg-gradient-to-br) with shadow-lg for depth
+  - To-Do: Orange to Amber (from-orange-500 to-amber-600)
+  - Counter: Teal to Cyan (from-teal-500 to-cyan-600)
+  - Timer: Darker Orange to Amber (from-orange-600 to-amber-700)
+  - Analysis: Cyan to Teal (from-cyan-500 to-teal-600)
+- Depth: Consistent shadow-lg shadows for modern elevated appearance
+- Icon: Large Lucide-React icon (w-12 h-12 md:w-16 md:h-16) centered at top in pure white
   - To-Do List: ClipboardList
-  - Question Counter: Calculator or Tally5
-  - Timer: Timer or Hourglass
+  - Question Counter: Calculator
+  - Timer: Timer
   - Analytics: BarChart
-- Label: Centered below icon, white text, clear and readable
-- Hover Effect: Subtle brightness increase with smooth transition
-- Active State: Slight brightness decrease for tactile feedback
+- Label: Centered below icon, white text (text-white), font-semibold
+- Hover Effect: brightness-110 for subtle glow
+- Active State: brightness-90 for tactile feedback
+- Transition: transition-all duration-200 for smooth interactions
 
 ### Sub-Page Layouts
 - Header: Consistent with dashboard header
@@ -83,16 +91,20 @@
 - Components: Cards use dark surfaces with rounded-xl aesthetic and accent colors
 
 ## Animations
-- **Card Hover**: Subtle brightness adjustment (transition duration-200)
-- **Button Interactions**: Gentle brightness transitions
+- **Card Hover**: Brightness increase (brightness-110) with transition-all duration-200
+- **Card Active**: Brightness decrease (brightness-90) for press feedback
+- **Button Interactions**: Gentle hover:bg-white/20 on ghost variant buttons
 - **Progress Bars**: Smooth fill animations with teal color
+- **Loading Skeletons**: bg-white/20 with animate-pulse for consistency
 - Keep animations subtle and purposeful - avoid distractions from study tasks
 
-## Visual Depth
-- Use color tone differences rather than heavy shadows
-- Lighter surfaces appear "elevated" against darker backgrounds
-- Subtle borders only where necessary
-- Gradients add depth to important elements
+## Visual Depth & Shadows
+- **Headers**: shadow-lg for prominent elevation
+- **Navigation Cards**: shadow-lg for strong depth
+- **Content Cards**: shadow-md for subtle elevation (subject cards, stat cards, charts)
+- **Background**: Deep dark blue/charcoal creates contrast foundation
+- Gradients add vibrant depth to important interactive elements
+- No borders needed - shadows and color contrast provide sufficient definition
 
 ## Accessibility
 - Ensure sufficient color contrast for all text on dark backgrounds
@@ -106,29 +118,39 @@ No hero images required. The application is utility-focused with icon-based navi
 ## Page-Specific Guidelines
 
 ### Dashboard
-- Dark background with welcoming header featuring orange accent
-- Prominent 2x2 navigation grid with gradient cards
-- Clean, focused layout emphasizing the navigation cards
+- Deep dark background (bg-background)
+- Welcoming header with orange-to-amber gradient and shadow-lg
+- Prominent 2x2 grid (grid-cols-2) with vibrant gradient cards
+- Each card has shadow-lg, rounded-2xl, and hover/active brightness effects
 
 ### To-Do List Page
-- Task input section with orange accent button
-- List of tasks with subtle dark backgrounds
-- Teal checkmarks for completed tasks
+- Orange-to-amber header gradient with shadow-lg
+- Task cards with dark surface (Card component) 
+- Primary buttons use default styling with orange accent
+- Completed tasks show checkmark indicators
 
 ### Question Counter Page
-- Subject-based counters with increment/decrement controls
-- Orange buttons for primary actions
-- Teal progress indicators
-- Visual feedback for count changes
+- Teal-to-cyan header gradient with shadow-lg for uniqueness
+- 8 subject cards (grid-cols-1 md:grid-cols-2) with shadow-md
+- Each subject card has:
+  - Gradient header (alternating orange/amber and teal/cyan combinations)
+  - White subject name (text-white, font-semibold)
+  - Large count display (text-4xl font-bold text-foreground)
+  - Increment/decrement/reset buttons
 
 ### Timer Page
-- Large, prominent timer display in white text
-- Orange start/pause buttons
-- Teal accent for session indicators
-- Session tracking with dark card backgrounds
+- Darker orange-to-amber header gradient (from-orange-600 to-amber-700) with shadow-lg
+- Large timer display in white
+- Primary action buttons with orange accent
+- Session list with dark card backgrounds
+- Loading skeleton uses bg-white/20
 
 ### Analysis/Charts Page
-- Bar charts with teal and orange color scheme
-- Use Recharts library with dark theme colors
-- Statistics cards with dark surfaces
-- Orange for emphasis metrics, teal for data points
+- Cyan-to-teal header gradient with shadow-lg
+- Period tabs (Günlük/Haftalık/Aylık) for data filtering
+- Three stat cards with shadow-md:
+  - Toplam Soru: teal-400 text with teal-500/20 icon background
+  - Çalışma Süresi: orange-400 text with orange-500/20 icon background
+  - Ders Sayısı: cyan-400 text with cyan-500/20 icon background
+- Charts use teal/orange color palette (COLORS array)
+- All chart cards have shadow-md for consistency
