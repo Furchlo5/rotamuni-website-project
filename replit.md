@@ -44,6 +44,7 @@ Preferred communication style: Simple, everyday language.
 - `POST /api/question-counts` - Upsert question count
 - `GET /api/timer-sessions/:date` - Fetch timer sessions by date
 - `POST /api/timer-sessions` - Create timer session
+- `GET /api/stats?startDate=X&endDate=Y` - Fetch aggregated statistics for date range (weekly/monthly analytics)
 
 **Validation**: Zod schemas (defined in shared directory) validate all incoming API requests, with automatic error responses for validation failures.
 
@@ -102,6 +103,17 @@ Preferred communication style: Simple, everyday language.
   - Implemented atomic upserts using `onConflictDoUpdate` for question counts
   - All data now persists across server restarts
 - **Testing**: End-to-end tests confirm data persistence across page refreshes for todos, question counts, and timer sessions
+
+### Weekly/Monthly Statistics Feature
+- **Date**: November 24, 2025
+- **Change**: Added date range analytics with daily/weekly/monthly views to Analysis page
+- **Implementation**:
+  - New API endpoint `GET /api/stats?startDate=X&endDate=Y` for date range queries
+  - Added `getQuestionCountsByDateRange` and `getTimerSessionsByDateRange` to storage interface
+  - Frontend tabs for switching between Daily (today), Weekly (last 7 days), and Monthly (last 30 days)
+  - Data aggregation by subject across date ranges to prevent duplicate chart entries
+  - Dynamic header updates based on selected period (Bugün/Bu Hafta/Bu Ay)
+- **Testing**: End-to-end tests verify proper aggregation and unique subject entries across all three periods
 
 ### Styling & UI Utilities
 - **Tailwind CSS**: Utility-first CSS framework with custom configuration
