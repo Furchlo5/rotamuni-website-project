@@ -27,6 +27,9 @@ export function getSession() {
     ttl: sessionTtl,
     tableName: "sessions",
   });
+  sessionStore.on('error', (err: Error) => {
+    console.error('[SESSION] Store error:', err);
+  });
   return session({
     secret: process.env.SESSION_SECRET!,
     store: sessionStore,
@@ -105,6 +108,7 @@ export async function setupAuth(app: Express) {
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
   app.get("/api/login", (req, res, next) => {
+    console.log(`[AUTH] Login request - hostname: ${req.hostname}, protocol: ${req.protocol}`);
     ensureStrategy(req.hostname);
     passport.authenticate(`replitauth:${req.hostname}`, {
       prompt: "login consent",
@@ -113,10 +117,28 @@ export async function setupAuth(app: Express) {
   });
 
   app.get("/api/callback", (req, res, next) => {
+    console.log(`[AUTH] Callback request - hostname: ${req.hostname}, session: ${req.sessionID}`);
     ensureStrategy(req.hostname);
     passport.authenticate(`replitauth:${req.hostname}`, {
       successReturnToOrRedirect: "/",
       failureRedirect: "/api/login",
+    }, (err: any, user: any, info: any) => {
+      if (err) {
+        console.error('[AUTH] Callback error:', err);
+        return next(err);
+      }
+      if (!user) {
+        console.error('[AUTH] Callback failed - no user:', info);
+        return res.redirect("/api/login");
+      }
+      console.log('[AUTH] Callback success - user:', user.claims?.sub);
+      req.logIn(user, (loginErr) => {
+        if (loginErr) {
+          console.error('[AUTH] Login error:', loginErr);
+          return next(loginErr);
+        }
+        return res.redirect("/");
+      });
     })(req, res, next);
   });
 
