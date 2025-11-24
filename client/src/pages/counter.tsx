@@ -97,7 +97,9 @@ export default function CounterPage() {
           <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
             <div className="text-center">
               <div className="text-sm text-white/60 mb-1">Today's Total</div>
-              <div className="text-4xl font-bold text-[#ff9a56]" data-testid="text-total-count">
+
+              {/* burada className rengi turkuaz yapıldı... */}
+              <div className="text-4xl font-bold text-[#14b8a6]" data-testid="text-total-count">
                 {isLoading ? "..." : totalQuestions}
               </div>
               <div className="text-xs text-white/50 mt-1">questions solved</div>
@@ -116,7 +118,7 @@ export default function CounterPage() {
             <p className="text-sm text-white/50 mb-6">
               Enter the number of questions you've solved today
             </p>
-
+            
             {/* Input Field */}
             <div className="mb-6">
               <Input
@@ -129,8 +131,8 @@ export default function CounterPage() {
                   const value = e.target.value.replace(/[^0-9]/g, "");
                   setInputValue(value);
                 }}
-                onFocus={() => setShowKeypad(true)}
-                className="h-16 text-center text-3xl font-bold bg-[#0a1628] border-[#2d4a6f] text-white placeholder:text-white/30 focus:border-[#ff9a56] focus:ring-[#ff9a56]/20"
+                onFocus={() => setShowKeypad(true)} {/* burada focus:border ve focus:ring turkuaz yapıldı...*/}
+                className="h-16 text-center text-3xl font-bold bg-[#0a1628] border-[#2d4a6f] text-white placeholder:text-white/30 focus:border-[#14b8a6] focus:ring-[#14b8a6]/20"
                 data-testid="input-question-count"
               />
             </div>
@@ -138,8 +140,8 @@ export default function CounterPage() {
             {/* Save Button */}
             <Button
               onClick={handleSave}
-              disabled={!inputValue || updateMutation.isPending}
-              className="w-full h-14 bg-gradient-to-r from-[#ff9a56] to-[#ff7e3f] hover:from-[#ffab70] hover:to-[#ff8f58] text-white font-semibold text-lg shadow-lg shadow-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!inputValue || updateMutation.isPending} {/*Burada from, to, hover:from, hover:to degistirildi */}
+              className="w-full h-14 bg-gradient-to-r from-[#14b8a6] to-[#0891b2] hover:from-[#2dd4bf] hover:to-[#06b6d4] text-white font-semibold text-lg shadow-lg shadow-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
               data-testid="button-save"
             >
               <Check className="w-5 h-5 mr-2" />
