@@ -129,7 +129,7 @@ export default function CounterPage() {
               return (
                 <Card
                   key={subject.name}
-                  className="overflow-hidden"
+                  className="overflow-hidden shadow-md"
                   data-testid={`card-subject-${subject.name}`}
                 >
                   <div className={`bg-gradient-to-br ${subject.color} p-4`}>
