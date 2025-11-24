@@ -31,15 +31,19 @@ const COLORS = [
 export default function AnalysisPage() {
   const today = new Date().toISOString().split("T")[0];
 
-  const { data: questionCounts = [], isLoading: loadingQuestions } = useQuery<
-    QuestionCount[]
-  >({
+  const {
+    data: questionCounts = [],
+    isLoading: loadingQuestions,
+    isError: errorQuestions,
+  } = useQuery<QuestionCount[]>({
     queryKey: ["/api/question-counts", today],
   });
 
-  const { data: timerSessions = [], isLoading: loadingSessions } = useQuery<
-    TimerSession[]
-  >({
+  const {
+    data: timerSessions = [],
+    isLoading: loadingSessions,
+    isError: errorSessions,
+  } = useQuery<TimerSession[]>({
     queryKey: ["/api/timer-sessions", today],
   });
 
@@ -73,6 +77,7 @@ export default function AnalysisPage() {
   }, []);
 
   const isLoading = loadingQuestions || loadingSessions;
+  const hasError = errorQuestions || errorSessions;
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
@@ -148,8 +153,22 @@ export default function AnalysisPage() {
         </div>
 
         {isLoading ? (
-          <Card className="p-8">
-            <p className="text-center text-muted-foreground">Yükleniyor...</p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {[1, 2].map((i) => (
+              <Card key={i} className="p-6">
+                <div className="h-6 w-48 bg-muted rounded animate-pulse mb-4" />
+                <div className="h-64 bg-muted rounded animate-pulse" />
+              </Card>
+            ))}
+          </div>
+        ) : hasError ? (
+          <Card className="p-12">
+            <div className="text-center">
+              <p className="text-destructive font-semibold mb-2">Veri yüklenemedi</p>
+              <p className="text-muted-foreground text-sm">
+                Lütfen sayfayı yenileyin veya daha sonra tekrar deneyin.
+              </p>
+            </div>
           </Card>
         ) : questionData.length === 0 && timeData.length === 0 ? (
           <Card className="p-12">

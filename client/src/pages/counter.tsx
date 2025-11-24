@@ -4,6 +4,7 @@ import { ArrowLeft, Plus, Minus, RotateCcw } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { QuestionCount } from "@shared/schema";
 
@@ -20,6 +21,7 @@ const subjects = [
 
 export default function CounterPage() {
   const today = new Date().toISOString().split("T")[0];
+  const { toast } = useToast();
 
   const { data: counts = [], isLoading } = useQuery<QuestionCount[]>({
     queryKey: ["/api/question-counts", today],
@@ -29,11 +31,18 @@ export default function CounterPage() {
     mutationFn: ({ subject, count }: { subject: string; count: number }) =>
       apiRequest("POST", "/api/question-counts", {
         subject,
-        count,
+        count: Math.max(0, count),
         date: today,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/question-counts", today] });
+    },
+    onError: () => {
+      toast({
+        title: "Hata!",
+        description: "Soru sayısı güncellenemedi.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -46,6 +55,13 @@ export default function CounterPage() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/question-counts", today] });
+    },
+    onError: () => {
+      toast({
+        title: "Hata!",
+        description: "Soru sayısı sıfırlanamadı.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -95,9 +111,17 @@ export default function CounterPage() {
         </div>
 
         {isLoading ? (
-          <Card className="p-4">
-            <p className="text-center text-muted-foreground">Yükleniyor...</p>
-          </Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i} className="overflow-hidden">
+                <div className="bg-muted h-16 animate-pulse" />
+                <div className="p-4 space-y-4">
+                  <div className="h-12 bg-muted rounded animate-pulse mx-auto w-24" />
+                  <div className="h-10 bg-muted rounded animate-pulse" />
+                </div>
+              </Card>
+            ))}
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {subjects.map((subject) => {

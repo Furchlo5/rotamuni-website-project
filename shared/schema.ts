@@ -13,7 +13,6 @@ export const todos = pgTable("todos", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   title: text("title").notNull(),
   completed: boolean("completed").notNull().default(false),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const questionCounts = pgTable("question_counts", {
@@ -28,7 +27,6 @@ export const timerSessions = pgTable("timer_sessions", {
   duration: integer("duration").notNull(),
   subject: text("subject").notNull(),
   date: text("date").notNull(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -38,8 +36,9 @@ export const insertUserSchema = createInsertSchema(users).pick({
 
 export const insertTodoSchema = createInsertSchema(todos).omit({
   id: true,
-  createdAt: true,
 });
+
+export const updateTodoSchema = insertTodoSchema.partial();
 
 export const insertQuestionCountSchema = createInsertSchema(questionCounts).omit({
   id: true,
@@ -47,7 +46,6 @@ export const insertQuestionCountSchema = createInsertSchema(questionCounts).omit
 
 export const insertTimerSessionSchema = createInsertSchema(timerSessions).omit({
   id: true,
-  createdAt: true,
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;

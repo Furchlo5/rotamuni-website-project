@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { ArrowLeft, Plus, Trash2, CheckCircle2, Circle } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, CheckCircle2, Circle, ClipboardList } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,13 @@ export default function TodoPage() {
         description: "Yeni göreviniz listeye eklendi.",
       });
     },
+    onError: () => {
+      toast({
+        title: "Hata!",
+        description: "Görev eklenemedi. Lütfen tekrar deneyin.",
+        variant: "destructive",
+      });
+    },
   });
 
   const toggleMutation = useMutation({
@@ -35,6 +42,13 @@ export default function TodoPage() {
       apiRequest("PATCH", `/api/todos/${id}`, { completed }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/todos"] });
+    },
+    onError: () => {
+      toast({
+        title: "Hata!",
+        description: "Görev güncellenemedi.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -45,6 +59,13 @@ export default function TodoPage() {
       toast({
         title: "Görev silindi",
         description: "Görev listeden kaldırıldı.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Hata!",
+        description: "Görev silinemedi.",
+        variant: "destructive",
       });
     },
   });
@@ -105,9 +126,17 @@ export default function TodoPage() {
 
         <div className="space-y-3">
           {isLoading ? (
-            <Card className="p-4">
-              <p className="text-center text-muted-foreground">Yükleniyor...</p>
-            </Card>
+            <>
+              {[1, 2, 3].map((i) => (
+                <Card key={i} className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-6 h-6 bg-muted rounded-full animate-pulse" />
+                    <div className="flex-1 h-5 bg-muted rounded animate-pulse" />
+                    <div className="w-9 h-9 bg-muted rounded animate-pulse" />
+                  </div>
+                </Card>
+              ))}
+            </>
           ) : todos.length === 0 ? (
             <Card className="p-8">
               <div className="text-center">

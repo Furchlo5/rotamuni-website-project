@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import {
   insertTodoSchema,
+  updateTodoSchema,
   insertQuestionCountSchema,
   insertTimerSessionSchema,
 } from "@shared/schema";
@@ -35,7 +36,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/todos/:id", async (req, res) => {
     try {
       const { id } = req.params;
-      const updates = req.body;
+      const updates = updateTodoSchema.parse(req.body);
       const todo = await storage.updateTodo(id, updates);
       if (!todo) {
         res.status(404).json({ error: "Todo not found" });
@@ -43,7 +44,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.json(todo);
     } catch (error) {
-      res.status(500).json({ error: "Failed to update todo" });
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: error.errors });
+      } else {
+        res.status(500).json({ error: "Failed to update todo" });
+      }
     }
   });
 

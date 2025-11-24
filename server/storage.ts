@@ -59,9 +59,7 @@ export class MemStorage implements IStorage {
   }
 
   async getTodos(): Promise<Todo[]> {
-    return Array.from(this.todos.values()).sort((a, b) => {
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    });
+    return Array.from(this.todos.values());
   }
 
   async getTodo(id: string): Promise<Todo | undefined> {
@@ -73,7 +71,6 @@ export class MemStorage implements IStorage {
     const todo: Todo = {
       ...insertTodo,
       id,
-      createdAt: new Date(),
     };
     this.todos.set(id, todo);
     return todo;
@@ -122,11 +119,7 @@ export class MemStorage implements IStorage {
   }
 
   async getTimerSessionsByDate(date: string): Promise<TimerSession[]> {
-    return Array.from(this.timerSessions.values())
-      .filter((ts) => ts.date === date)
-      .sort((a, b) => {
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      });
+    return Array.from(this.timerSessions.values()).filter((ts) => ts.date === date);
   }
 
   async createTimerSession(
@@ -136,7 +129,6 @@ export class MemStorage implements IStorage {
     const session: TimerSession = {
       ...insertSession,
       id,
-      createdAt: new Date(),
     };
     this.timerSessions.set(id, session);
     return session;

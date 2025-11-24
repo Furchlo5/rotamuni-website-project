@@ -33,7 +33,11 @@ export default function TimerPage() {
   const { toast } = useToast();
   const today = new Date().toISOString().split("T")[0];
 
-  const { data: sessions = [] } = useQuery<TimerSession[]>({
+  const {
+    data: sessions = [],
+    isLoading: loadingSessions,
+    isError: errorSessions,
+  } = useQuery<TimerSession[]>({
     queryKey: ["/api/timer-sessions", today],
   });
 
@@ -44,11 +48,20 @@ export default function TimerPage() {
         subject: selectedSubject,
         date: today,
       }),
-    onSuccess: () => {
+    onSuccess: (_data, duration) => {
       queryClient.invalidateQueries({ queryKey: ["/api/timer-sessions", today] });
       toast({
         title: "Çalışma kaydedildi!",
-        description: `${formatTime(seconds)} süre kaydedildi.`,
+        description: `${formatTime(duration)} süre kaydedildi.`,
+      });
+      setSeconds(0);
+      setIsRunning(false);
+    },
+    onError: () => {
+      toast({
+        title: "Hata!",
+        description: "Çalışma kaydedilemedi. Lütfen tekrar deneyin.",
+        variant: "destructive",
       });
     },
   });
@@ -74,10 +87,13 @@ export default function TimerPage() {
       .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const handleReset = () => {
-    if (seconds > 0 && !isRunning) {
+  const handleSave = () => {
+    if (seconds > 0 && !saveMutation.isPending) {
       saveMutation.mutate(seconds);
     }
+  };
+
+  const handleReset = () => {
     setSeconds(0);
     setIsRunning(false);
   };
@@ -107,7 +123,11 @@ export default function TimerPage() {
                 Çalışma Timer
               </h1>
               <p className="text-blue-50 text-sm mt-1">
-                Bugün toplam: {formatTime(todayTotal)}
+                {loadingSessions ? (
+                  <span className="inline-block w-32 h-4 bg-blue-200/50 rounded animate-pulse" />
+                ) : (
+                  `Bugün toplam: ${formatTime(todayTotal)}`
+                )}
               </p>
             </div>
           </div>
@@ -140,11 +160,15 @@ export default function TimerPage() {
               {formatTime(seconds)}
             </div>
             <div className="text-sm text-muted-foreground">
-              {selectedSubject} için bugün: {formatTime(subjectTotal)}
+              {loadingSessions ? (
+                <span className="inline-block w-48 h-4 bg-muted rounded animate-pulse" />
+              ) : (
+                `${selectedSubject} için bugün: ${formatTime(subjectTotal)}`
+              )}
             </div>
           </div>
 
-          <div className="flex gap-3 justify-center">
+          <div className="flex gap-3 justify-center flex-wrap">
             <Button
               size="lg"
               onClick={() => setIsRunning(!isRunning)}
@@ -165,9 +189,18 @@ export default function TimerPage() {
             </Button>
             <Button
               size="lg"
+              variant="default"
+              onClick={handleSave}
+              disabled={seconds === 0 || isRunning || saveMutation.isPending}
+              data-testid="button-save-timer"
+            >
+              Kaydet
+            </Button>
+            <Button
+              size="lg"
               variant="outline"
               onClick={handleReset}
-              disabled={seconds === 0}
+              disabled={seconds === 0 || isRunning}
               data-testid="button-reset-timer"
             >
               <RotateCcw className="w-5 h-5 mr-2" />
@@ -176,7 +209,32 @@ export default function TimerPage() {
           </div>
         </Card>
 
-        {sessions.length > 0 && (
+        {loadingSessions ? (
+          <Card className="p-4">
+            <div className="space-y-2">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="flex justify-between items-center p-2"
+                >
+                  <div className="h-4 w-24 bg-muted rounded animate-pulse" />
+                  <div className="h-4 w-16 bg-muted rounded animate-pulse" />
+                </div>
+              ))}
+            </div>
+          </Card>
+        ) : errorSessions ? (
+          <Card className="p-6">
+            <div className="text-center">
+              <p className="text-destructive font-semibold mb-1">
+                Seanslar yüklenemedi
+              </p>
+              <p className="text-muted-foreground text-sm">
+                Lütfen sayfayı yenileyin.
+              </p>
+            </div>
+          </Card>
+        ) : sessions.length > 0 ? (
           <Card className="p-4">
             <h3 className="font-semibold mb-3">Bugünkü Seanslar</h3>
             <div className="space-y-2">
@@ -194,7 +252,7 @@ export default function TimerPage() {
               ))}
             </div>
           </Card>
-        )}
+        ) : null}
       </div>
     </div>
   );
