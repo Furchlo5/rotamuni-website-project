@@ -36,15 +36,24 @@ Preferred communication style: Simple, everyday language.
 - Production mode serves pre-built static assets from the dist directory
 
 **API Design**: RESTful API endpoints under `/api/*` namespace:
-- `GET /api/todos` - Fetch all todos
-- `POST /api/todos` - Create new todo
-- `PATCH /api/todos/:id` - Update todo
-- `DELETE /api/todos/:id` - Delete todo
-- `GET /api/question-counts/:date` - Fetch question counts by date
-- `POST /api/question-counts` - Upsert question count
-- `GET /api/timer-sessions/:date` - Fetch timer sessions by date
-- `POST /api/timer-sessions` - Create timer session
-- `GET /api/stats?startDate=X&endDate=Y` - Fetch aggregated statistics for date range (weekly/monthly analytics)
+- **Authentication**:
+  - `GET /api/auth/user` - Fetch current user (returns null if not authenticated)
+  - `GET /api/login` - Redirect to Replit OAuth login
+  - `GET /api/logout` - Logout and redirect to landing page
+  - `GET /api/auth/callback` - OAuth callback handler
+- **To-Do List**:
+  - `GET /api/todos` - Fetch all todos
+  - `POST /api/todos` - Create new todo
+  - `PATCH /api/todos/:id` - Update todo
+  - `DELETE /api/todos/:id` - Delete todo
+- **Question Tracking**:
+  - `GET /api/question-counts/:date` - Fetch question counts by date
+  - `POST /api/question-counts` - Upsert question count
+- **Timer Sessions**:
+  - `GET /api/timer-sessions/:date` - Fetch timer sessions by date
+  - `POST /api/timer-sessions` - Create timer session
+- **Analytics**:
+  - `GET /api/stats?startDate=X&endDate=Y` - Fetch aggregated statistics for date range (weekly/monthly analytics)
 
 **Validation**: Zod schemas (defined in shared directory) validate all incoming API requests, with automatic error responses for validation failures.
 
@@ -55,7 +64,8 @@ Preferred communication style: Simple, everyday language.
 **ORM**: Drizzle ORM configured for PostgreSQL dialect with schema-first approach.
 
 **Schema Structure**:
-- `users` table: User authentication with username/password
+- `users` table: OAuth user data with email, firstName, lastName, profileImageUrl (via Replit Auth)
+- `sessions` table: Express session storage for authentication state
 - `todos` table: Task management with title and completion status
 - `questionCounts` table: Daily question counts per subject with unique constraint on (subject, date) to prevent duplicates
 - `timerSessions` table: Study session tracking with duration and subject
@@ -125,6 +135,31 @@ Preferred communication style: Simple, everyday language.
 - **TypeScript**: Static type checking across the entire codebase
 - **Wouter**: Lightweight client-side routing library
 - **date-fns**: Date manipulation and formatting utilities
+
+### Authentication System Implementation
+- **Date**: November 24, 2025
+- **Change**: Implemented complete Replit Auth integration with OAuth support (email, Google, Apple login)
+- **Implementation**:
+  - **Backend**:
+    - Created `server/replitAuth.ts` with Replit Auth configuration using openid-client and passport
+    - Updated database schema: users table now stores OAuth fields (email, firstName, lastName, profileImageUrl)
+    - Added sessions table for PostgreSQL session storage (connect-pg-simple)
+    - Session cookies configured with environment-aware security (secure flag only in production)
+    - Public `/api/auth/user` endpoint returns null when not authenticated (prevents cache deadlock)
+  - **Frontend**:
+    - Created `useAuth` hook for centralized auth state management
+    - Built Navbar component with logo and authentication buttons (Sign In/Sign Up or Logout)
+    - Created Landing page for unauthenticated users with hero section
+    - Protected routes: authenticated users see dashboard, unauthenticated users see landing
+    - Single `useAuth` call in App.tsx Router, passed as props to Navbar to avoid duplicate requests
+  - **User Flow**:
+    - Unauthenticated: Landing page with Sign In/Sign Up buttons
+    - Click Sign In → redirect to `/api/login` → Replit OAuth flow
+    - After OAuth: callback to `/api/auth/callback` → session created → redirect to dashboard
+    - Authenticated: Dashboard with 4 feature cards + Navbar with Logout button
+    - Click Logout → session destroyed → redirect to landing page
+- **Testing**: End-to-end test confirms complete auth flow (landing → login → dashboard → logout → landing)
+- **Assets**: User logo (logo_son_1764010143596.png) imported via @assets alias in Navbar
 
 ### Google Fonts Integration
 - **Poppins**: Primary font family loaded via Google Fonts CDN
