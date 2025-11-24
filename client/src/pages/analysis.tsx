@@ -155,7 +155,7 @@ export default function AnalysisPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <Card className="p-6">
+          <Card className="p-6 shadow-md">
             <div className="flex items-start gap-3">
               <div className="p-3 bg-teal-500/20 rounded-lg">
                 <Target className="w-6 h-6 text-teal-400" />
@@ -169,21 +169,21 @@ export default function AnalysisPage() {
             </div>
           </Card>
 
-          <Card className="p-6">
+          <Card className="p-6 shadow-md">
             <div className="flex items-start gap-3">
               <div className="p-3 bg-orange-500/20 rounded-lg">
                 <Clock className="w-6 h-6 text-orange-400" />
               </div>
               <div>
                 <div className="text-sm text-muted-foreground">Çalışma Süresi</div>
-                <div className="text-2xl font-bold text-[#2dd4bf]" data-testid="text-total-time">
+                <div className="text-2xl font-bold text-orange-400" data-testid="text-total-time">
                   {formatTime(totalTime)}
                 </div>
               </div>
             </div>
           </Card>
 
-          <Card className="p-6">
+          <Card className="p-6 shadow-md">
             <div className="flex items-start gap-3">
               <div className="p-3 bg-cyan-500/20 rounded-lg">
                 <TrendingUp className="w-6 h-6 text-cyan-400" />
@@ -204,14 +204,14 @@ export default function AnalysisPage() {
         {isLoading ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {[1, 2].map((i) => (
-              <Card key={i} className="p-6">
+              <Card key={i} className="p-6 shadow-md">
                 <div className="h-6 w-48 bg-muted rounded animate-pulse mb-4" />
                 <div className="h-64 bg-muted rounded animate-pulse" />
               </Card>
             ))}
           </div>
         ) : hasError ? (
-          <Card className="p-12">
+          <Card className="p-12 shadow-md">
             <div className="text-center">
               <p className="text-destructive font-semibold mb-2">Veri yüklenemedi</p>
               <p className="text-muted-foreground text-sm">
@@ -220,7 +220,7 @@ export default function AnalysisPage() {
             </div>
           </Card>
         ) : questionData.length === 0 && timeData.length === 0 ? (
-          <Card className="p-12">
+          <Card className="p-12 shadow-md">
             <div className="text-center">
               <TrendingUp className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
               <h3 className="text-lg font-semibold mb-2">Henüz veri yok</h3>
@@ -232,7 +232,7 @@ export default function AnalysisPage() {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {questionData.length > 0 && (
-              <Card className="p-6">
+              <Card className="p-6 shadow-md">
                 <h3 className="font-semibold text-lg mb-4">
                   Ders Bazında Soru Dağılımı
                 </h3>
@@ -255,7 +255,7 @@ export default function AnalysisPage() {
             )}
 
             {timeData.length > 0 && (
-              <Card className="p-6">
+              <Card className="p-6 shadow-md">
                 <h3 className="font-semibold text-lg mb-4">
                   Ders Bazında Çalışma Süresi (dk)
                 </h3>
