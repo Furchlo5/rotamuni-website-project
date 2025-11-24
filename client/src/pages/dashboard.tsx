@@ -45,10 +45,10 @@ export default function Dashboard() {
           {navigationCards.map((card) => (
             <Link key={card.path} href={card.path}>
               <button
-                className={`${card.color} rounded-2xl p-6 md:p-8 w-full transition-all duration-200 hover:brightness-110 active:brightness-90`}
+                className={`${card.color} rounded-2xl p-6 md:p-8 w-full transition-all duration-200 hover:brightness-110 active:brightness-90 shadow-lg`}
                 data-testid={`button-nav-${card.path.substring(1)}`}
               >
-                <div className="flex flex-col items-center justify-center gap-3 text-[#0e0ddbd4]">
+                <div className="flex flex-col items-center justify-center gap-3">
                   <card.icon className="w-12 h-12 md:w-16 md:h-16 text-white" />
                   <span className="font-semibold text-white text-sm md:text-base text-center">
                     {card.title}
