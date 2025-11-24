@@ -171,7 +171,7 @@ export default function AnalysisPage() {
 
           <Card className="p-6">
             <div className="flex items-start gap-3">
-              <div className="p-3 bg-orange-500/20 rounded-lg">
+              <div className="p-3 rounded-lg bg-[#06b6d433]">
                 <Clock className="w-6 h-6 text-orange-400" />
               </div>
               <div>
