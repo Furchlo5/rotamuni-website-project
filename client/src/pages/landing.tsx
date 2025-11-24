@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CheckCircle2, BarChart3, Clock, ListTodo } from "lucide-react";
-import logoImage from "@assets/logo_son_1764010143596.png";
+import logoImage from "@assets/logo_son2_1764011054295.png";
 
 export default function Landing() {
   return (
@@ -14,7 +14,7 @@ export default function Landing() {
               <img 
                 src={logoImage} 
                 alt="YKS Yol Arkadaşım Logo" 
-                className="h-32 w-32 object-contain"
+                className="h-48 w-48 object-contain"
                 data-testid="img-hero-logo"
               />
             </div>
