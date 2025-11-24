@@ -120,6 +120,7 @@ export default function CounterPage() {
             </p>
             
             {/* Input Field */}
+            {/* burada focus:border ve focus:ring turkuaz yapıldı */}
             <div className="mb-6">
               <Input
                 type="text"
@@ -131,16 +132,16 @@ export default function CounterPage() {
                   const value = e.target.value.replace(/[^0-9]/g, "");
                   setInputValue(value);
                 }}
-                onFocus={() => setShowKeypad(true)} {/* burada focus:border ve focus:ring turkuaz yapıldı...*/}
+                onFocus={() => setShowKeypad(true)}
                 className="h-16 text-center text-3xl font-bold bg-[#0a1628] border-[#2d4a6f] text-white placeholder:text-white/30 focus:border-[#14b8a6] focus:ring-[#14b8a6]/20"
                 data-testid="input-question-count"
               />
             </div>
 
-            {/* Save Button */}
+            {/* Save Button - Burada from, to, hover:from, hover:to degistirildi */}
             <Button
               onClick={handleSave}
-              disabled={!inputValue || updateMutation.isPending} {/*Burada from, to, hover:from, hover:to degistirildi */}
+              disabled={!inputValue || updateMutation.isPending}
               className="w-full h-14 bg-gradient-to-r from-[#14b8a6] to-[#0891b2] hover:from-[#2dd4bf] hover:to-[#06b6d4] text-white font-semibold text-lg shadow-lg shadow-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
               data-testid="button-save"
             >
