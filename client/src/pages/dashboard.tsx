@@ -6,7 +6,7 @@ const navigationCards = [
     title: "To-Do List",
     path: "/todo",
     icon: ClipboardList,
-    color: "bg-gradient-to-br from-orange-500 to-amber-600",
+    color: "bg-gradient-to-br from-teal-500 to-cyan-600",
   },
   {
     title: "Soru Sayacı",
@@ -18,7 +18,7 @@ const navigationCards = [
     title: "Timer",
     path: "/timer",
     icon: Timer,
-    color: "bg-gradient-to-br from-orange-600 to-amber-700",
+    color: "bg-gradient-to-br from-cyan-500 to-teal-600",
   },
   {
     title: "Analiz",
@@ -32,7 +32,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-gradient-to-r from-orange-500 to-amber-600 rounded-2xl p-8 mb-8 shadow-lg">
+        <div className="bg-gradient-to-r from-teal-500 to-cyan-600 rounded-2xl p-8 mb-8 shadow-lg">
           <h1 className="text-3xl md:text-4xl font-bold text-center text-white" data-testid="text-welcome">
             YKS Yol Arkadaşım
           </h1>
