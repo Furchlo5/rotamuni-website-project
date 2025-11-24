@@ -47,7 +47,7 @@ Preferred communication style: Simple, everyday language.
 
 **Validation**: Zod schemas (defined in shared directory) validate all incoming API requests, with automatic error responses for validation failures.
 
-**Data Storage**: Abstracted through an `IStorage` interface, allowing for pluggable storage implementations. Currently includes an in-memory implementation (`MemStorage`) for development/testing. The schema and Drizzle configuration indicate preparation for PostgreSQL integration using Drizzle ORM.
+**Data Storage**: PostgreSQL database using Drizzle ORM with `DbStorage` implementation. All data persists across server restarts. Uses Neon Pool driver with WebSocket support for transactions and sessions.
 
 ### Database Design
 
@@ -56,10 +56,10 @@ Preferred communication style: Simple, everyday language.
 **Schema Structure**:
 - `users` table: User authentication with username/password
 - `todos` table: Task management with title and completion status
-- `questionCounts` table: Daily question counts per subject
+- `questionCounts` table: Daily question counts per subject with unique constraint on (subject, date) to prevent duplicates
 - `timerSessions` table: Study session tracking with duration and subject
 
-**Data Model Rationale**: Date-based tracking (storing dates as text) enables daily aggregation and historical analysis. Subjects are stored as text to allow flexibility in curriculum changes without schema migrations.
+**Data Model Rationale**: Date-based tracking (storing dates as text) enables daily aggregation and historical analysis. Subjects are stored as text to allow flexibility in curriculum changes without schema migrations. Atomic upserts using Drizzle's `onConflictDoUpdate` ensure data integrity for question counts.
 
 ### Code Organization
 
@@ -86,8 +86,22 @@ Preferred communication style: Simple, everyday language.
 - **Drizzle ORM**: Type-safe SQL query builder and schema manager
 
 ### Database
-- **@neondatabase/serverless**: PostgreSQL database adapter (configured but storage layer currently uses in-memory implementation)
+- **@neondatabase/serverless**: PostgreSQL database adapter with Pool driver and WebSocket support (via `ws` package)
+- **Drizzle ORM**: Production database implementation with atomic upserts and proper transaction handling
 - **connect-pg-simple**: PostgreSQL session store for Express sessions
+
+## Recent Changes (November 2024)
+
+### Database Persistence Migration
+- **Date**: November 24, 2025
+- **Change**: Migrated from in-memory storage (`MemStorage`) to PostgreSQL database (`DbStorage`)
+- **Implementation**: 
+  - Using Drizzle ORM with Neon Pool driver
+  - WebSocket support via `ws` package for Node.js compatibility
+  - Added unique constraint on `question_counts(subject, date)` to prevent duplicate entries
+  - Implemented atomic upserts using `onConflictDoUpdate` for question counts
+  - All data now persists across server restarts
+- **Testing**: End-to-end tests confirm data persistence across page refreshes for todos, question counts, and timer sessions
 
 ### Styling & UI Utilities
 - **Tailwind CSS**: Utility-first CSS framework with custom configuration

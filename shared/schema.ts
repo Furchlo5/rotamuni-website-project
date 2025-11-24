@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, boolean, timestamp, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -20,7 +20,9 @@ export const questionCounts = pgTable("question_counts", {
   subject: text("subject").notNull(),
   count: integer("count").notNull().default(0),
   date: text("date").notNull(),
-});
+}, (table) => ({
+  subjectDateUnique: unique().on(table.subject, table.date),
+}));
 
 export const timerSessions = pgTable("timer_sessions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

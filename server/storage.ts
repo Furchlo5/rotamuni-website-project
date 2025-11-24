@@ -135,4 +135,126 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+import { drizzle } from "drizzle-orm/neon-serverless";
+import { Pool, neonConfig } from "@neondatabase/serverless";
+import { eq, and } from "drizzle-orm";
+import * as schema from "@shared/schema";
+import ws from "ws";
+
+neonConfig.webSocketConstructor = ws;
+
+export class DbStorage implements IStorage {
+  private db;
+
+  constructor() {
+    const pool = new Pool({ connectionString: process.env.DATABASE_URL! });
+    this.db = drizzle({ client: pool, schema });
+  }
+
+  async getUser(id: string): Promise<User | undefined> {
+    const result = await this.db
+      .select()
+      .from(schema.users)
+      .where(eq(schema.users.id, id))
+      .limit(1);
+    return result[0];
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const result = await this.db
+      .select()
+      .from(schema.users)
+      .where(eq(schema.users.username, username))
+      .limit(1);
+    return result[0];
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const result = await this.db
+      .insert(schema.users)
+      .values(insertUser)
+      .returning();
+    return result[0];
+  }
+
+  async getTodos(): Promise<Todo[]> {
+    return await this.db.select().from(schema.todos);
+  }
+
+  async getTodo(id: string): Promise<Todo | undefined> {
+    const result = await this.db
+      .select()
+      .from(schema.todos)
+      .where(eq(schema.todos.id, id))
+      .limit(1);
+    return result[0];
+  }
+
+  async createTodo(insertTodo: InsertTodo): Promise<Todo> {
+    const result = await this.db
+      .insert(schema.todos)
+      .values(insertTodo)
+      .returning();
+    return result[0];
+  }
+
+  async updateTodo(
+    id: string,
+    updates: Partial<InsertTodo>,
+  ): Promise<Todo | undefined> {
+    const result = await this.db
+      .update(schema.todos)
+      .set(updates)
+      .where(eq(schema.todos.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteTodo(id: string): Promise<boolean> {
+    const result = await this.db
+      .delete(schema.todos)
+      .where(eq(schema.todos.id, id))
+      .returning();
+    return result.length > 0;
+  }
+
+  async getQuestionCountsByDate(date: string): Promise<QuestionCount[]> {
+    return await this.db
+      .select()
+      .from(schema.questionCounts)
+      .where(eq(schema.questionCounts.date, date));
+  }
+
+  async upsertQuestionCount(
+    data: InsertQuestionCount,
+  ): Promise<QuestionCount> {
+    const result = await this.db
+      .insert(schema.questionCounts)
+      .values(data)
+      .onConflictDoUpdate({
+        target: [schema.questionCounts.subject, schema.questionCounts.date],
+        set: { count: data.count },
+      })
+      .returning();
+    return result[0];
+  }
+
+  async getTimerSessionsByDate(date: string): Promise<TimerSession[]> {
+    return await this.db
+      .select()
+      .from(schema.timerSessions)
+      .where(eq(schema.timerSessions.date, date));
+  }
+
+  async createTimerSession(
+    insertSession: InsertTimerSession,
+  ): Promise<TimerSession> {
+    const result = await this.db
+      .insert(schema.timerSessions)
+      .values(insertSession)
+      .returning();
+    return result[0];
+  }
+}
+
+export const storage = new DbStorage();
