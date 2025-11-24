@@ -87,7 +87,7 @@ export default function CounterPage() {
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-gradient-to-r from-teal-500 to-cyan-600 rounded-2xl p-6 mb-6">
+        <div className="bg-gradient-to-r from-teal-500 to-cyan-600 rounded-2xl p-6 mb-6 shadow-lg">
           <div className="flex items-center gap-3">
             <Link href="/">
               <Button

@@ -106,7 +106,7 @@ export default function TimerPage() {
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="max-w-2xl mx-auto">
-        <div className="bg-gradient-to-r from-orange-600 to-amber-700 rounded-2xl p-6 mb-6">
+        <div className="bg-gradient-to-r from-orange-600 to-amber-700 rounded-2xl p-6 mb-6 shadow-lg">
           <div className="flex items-center gap-3">
             <Link href="/">
               <Button
@@ -124,7 +124,7 @@ export default function TimerPage() {
               </h1>
               <p className="text-white/90 text-sm mt-1">
                 {loadingSessions ? (
-                  <span className="inline-block w-32 h-4 bg-blue-200/50 rounded animate-pulse" />
+                  <span className="inline-block w-32 h-4 bg-white/20 rounded animate-pulse" />
                 ) : (
                   `Bugün toplam: ${formatTime(todayTotal)}`
                 )}

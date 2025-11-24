@@ -32,7 +32,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-gradient-to-r from-orange-500 to-amber-600 rounded-2xl p-8 mb-8">
+        <div className="bg-gradient-to-r from-orange-500 to-amber-600 rounded-2xl p-8 mb-8 shadow-lg">
           <h1 className="text-3xl md:text-4xl font-bold text-center text-white" data-testid="text-welcome">
             YKS Yol Arkadaşım
           </h1>

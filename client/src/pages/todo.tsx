@@ -81,7 +81,7 @@ export default function TodoPage() {
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="max-w-2xl mx-auto">
-        <div className="bg-gradient-to-r from-orange-500 to-amber-600 rounded-2xl p-6 mb-6">
+        <div className="bg-gradient-to-r from-orange-500 to-amber-600 rounded-2xl p-6 mb-6 shadow-lg">
           <div className="flex items-center gap-3">
             <Link href="/">
               <Button

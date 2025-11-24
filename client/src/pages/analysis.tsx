@@ -121,7 +121,7 @@ export default function AnalysisPage() {
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="max-w-6xl mx-auto">
-        <div className="bg-gradient-to-r from-cyan-500 to-teal-600 rounded-2xl p-6 mb-6">
+        <div className="bg-gradient-to-r from-cyan-500 to-teal-600 rounded-2xl p-6 mb-6 shadow-lg">
           <div className="flex items-center gap-3">
             <Link href="/">
               <Button
