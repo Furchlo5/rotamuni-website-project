@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -29,7 +29,66 @@ interface TimerContextType {
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
-const ALARM_SOUND_URL = "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdH2Onq2rp5yCZU9CQT5KTGN4kKq2tqugjnNYQzQvMTxOZoCcsLu1qZR7XEEvJScsO1FujKe5vbKciW1TPTE0Ok5niJ6xvLapk3xgRzY0Nk1gjJ+xurGlkHtiSTo3O0xgjKCyu7OmlX1iSTw8QE9kkaO0u7OnlYBmTkJESFdsk6a3vLWonYhyXU1GTFdok6S0urKnloNsTEVLV2eRorW4saeYiG5ZTEpUY42fsbezqJmKcV1STFNhj5+wtbKpmox1X1RRV2SSobKzsKeZi3JbUk9WYI+fsLOyqJmMc11UUldijp6vsrGomot0XlRTV2GPn6+ysKiZjHReVFRYYo6er7GvqJmLdF5VVVlij56usK+omYx0XlVVWWKOnq6wr6eZjHVfVlZaYo6errCup5mMdV9WVlpijp6usK6nmYx1X1ZWWmKOnq6wrqeZjHVfVlZaYo6errCup5mMdV9WVlpijp6usK6nmYx1X1ZWWmKOnq6wrqeZjHVfVlZaYo6errCup5mMdV9WVlpijp6usK6nmYx1X1ZWWmKOnq6wrqeZjHVfVlZaYo6errCup5mMdV9WVlpijp6usK6nmYx1YFdXW2OPn66wr6iajXZgV1dbY4+frrCvqJqNdmBXV1xkj5+vsLComY12YFhYXGSPn6+wsKiZjXZgWFhcZI+fr7CwqJmNdmBYWFxkj5+vsLComY12YFhYXGSPn6+wsKiZjXZgWFhcZI+fr7CwqJmNdmBYWFxkj5+vsLComY12YFhYXGSPn6+wsKiZjXZgWFhcZI+fr7CwqJmNdmBYWF1lkKCwsbGpmY53YVlZXWWQoLCxsamZj3dhWVldZZCgsLGxqZmPd2FZWl5mkaCxsrKqmpB4YlpaXmaRobGysqqakHhiWlpeZpGhsbKyqpqQeGJaWl5mkaCxsrKqmpB4YlpaXmaRobGysqqakHhiWlpeZpGhsbKyqpqQeGJbW19nkqKys7OrnJF5Y1tcYGeRobKzsquakXljW1xgZ5KisrSzq5uReWNbXGBnkqKytLSsnJJ6ZFxdYWiSorK0tKyckntlXV5iaZOjs7W1rZ2Te2VdXmJpk6OztbWtnZN7ZV1eYmmTo7O1ta2dk3tlXV5iaZOjs7W1rZ2Te2VdXmJpk6OztbWtnZN7ZV1eYmmTo7O1ta2dk3tlXV5iaZOjs7W1rZ2Te2VdXmJpk6OztbWtnZN7ZV5fY2qUpLS2trCfln1nX2BkalSktLa2sJ+WfWdfYGRqk6S0tra0oJd+aGBhZWuUpba3t7Wgl35oYGFla5Sltbe3taGXfmhhYmZslaa3uLi2opiBamJjaGyVpri4uLeimIFqYmNobJWmuLi4t6KYgWpiY2hslaa4uLi3opmCalJjY2htlqa4ubm4o5qCa2NkZ26Wprm5ubiimpZ/ZmFlZ3CXqLq6urekmX9mYWVncJeouru7uqadiHhmYmVocZiquby8vKqlnop7aGVobXWaqrq8vLutop2Nf2xoa3B5nay9v8C/saeginVubHF1fJ+yvsDDwrmvoYqBd3Jzd3qao7W+wMC7sp2MhX53dHd5mqW4wcLBvrOemouCfXl4eJqluMPExMK5op2Lh4B9fHybqLrFxsbFvqefj42FgoB+oKy+yMnJyMGspJGPiIWDgaKuwMnKy8vDraWSko6KhoSjsMHLzc3Nxq+olZWRjIiFpbLCzM7Oz8ixqZeXk4+LiKe0xM/R0dHLtKyamZWRjYqpt8bR09PU0Le9paqpqamwt77I0dTV1c+6wLKxs7a4vcPI0tTW1tLBycC6vcDBxMnO09XX2NXMzsjDwcLCw8fM0dXX2NjW0M/Lx8XFxsfK0NTV19fY1tLQzczKysrMztLV19fY19XT0c/Nzc3Oz9LW2NnZ2djX1tTS0dDQ0NLU1tnZ2dnZ2djX1tXU09PU1dbZ2drZ2NnZ2djX1tXV1dXW19na2trZ2NjY2NjX1tbW1tbY2dra2tra2NjY2NjX1tbW1tbY2dra2tra2NjY2NjX19fX19jZ2tra2tra2djY2NjX19fX19jZ2tra2tra2djY2NjY2NjY2NjZ2tra2tra2dnY2NjY2NjY2NjZ2tra2tra2dnZ2djY2NjY2djZ2tra2tra2tnZ2djY2NjY2djZ2tra2trZ2dnZ2dnY2A==";
+class BellSound {
+  private audioContext: AudioContext | null = null;
+  private isInitialized = false;
+
+  initialize() {
+    if (this.isInitialized) return;
+    try {
+      this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      this.isInitialized = true;
+    } catch (e) {
+      console.warn('Web Audio API not supported');
+    }
+  }
+
+  async play() {
+    if (!this.audioContext) {
+      this.initialize();
+    }
+    
+    if (!this.audioContext) return;
+
+    if (this.audioContext.state === 'suspended') {
+      await this.audioContext.resume();
+    }
+
+    const playBell = (startTime: number, frequency: number, duration: number) => {
+      const oscillator = this.audioContext!.createOscillator();
+      const gainNode = this.audioContext!.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(this.audioContext!.destination);
+      
+      oscillator.frequency.setValueAtTime(frequency, startTime);
+      oscillator.type = 'sine';
+      
+      gainNode.gain.setValueAtTime(0, startTime);
+      gainNode.gain.linearRampToValueAtTime(0.3, startTime + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+      
+      oscillator.start(startTime);
+      oscillator.stop(startTime + duration);
+    };
+
+    const now = this.audioContext.currentTime;
+    
+    playBell(now, 830, 0.6);
+    playBell(now + 0.1, 1046, 0.5);
+    playBell(now + 0.2, 1318, 0.4);
+    
+    playBell(now + 0.8, 830, 0.6);
+    playBell(now + 0.9, 1046, 0.5);
+    playBell(now + 1.0, 1318, 0.4);
+    
+    playBell(now + 1.6, 830, 0.6);
+    playBell(now + 1.7, 1046, 0.5);
+    playBell(now + 1.8, 1318, 0.4);
+  }
+}
+
+const bellSound = new BellSound();
 
 export function TimerProvider({ children }: { children: ReactNode }) {
   const [seconds, setSeconds] = useState(0);
@@ -45,17 +104,32 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const today = new Date().toISOString().split("T")[0];
 
-  const playAlarm = useCallback(() => {
-    const audio = new Audio(ALARM_SOUND_URL);
-    audio.volume = 0.7;
-    audio.play().catch(() => {});
+  useEffect(() => {
+    const initAudio = () => {
+      bellSound.initialize();
+      document.removeEventListener('click', initAudio);
+      document.removeEventListener('touchstart', initAudio);
+    };
     
-    setTimeout(() => {
-      audio.play().catch(() => {});
-    }, 500);
-    setTimeout(() => {
-      audio.play().catch(() => {});
-    }, 1000);
+    document.addEventListener('click', initAudio, { once: true });
+    document.addEventListener('touchstart', initAudio, { once: true });
+    
+    return () => {
+      document.removeEventListener('click', initAudio);
+      document.removeEventListener('touchstart', initAudio);
+    };
+  }, []);
+
+  const playAlarm = useCallback(() => {
+    bellSound.play();
+    
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('Pomodoro Tamamlandı! 🎉', {
+        body: 'Çalışma süreniz bitti. Mola zamanı!',
+        icon: '/favicon.ico',
+        tag: 'pomodoro-complete'
+      });
+    }
   }, []);
 
   const saveMutation = useMutation({
@@ -136,7 +210,10 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     }
   }, [seconds, saveMutation, selectedSubject]);
 
-  const startPomodoro = useCallback(() => setPomodoroRunning(true), []);
+  const startPomodoro = useCallback(() => {
+    bellSound.initialize();
+    setPomodoroRunning(true);
+  }, []);
   const pausePomodoro = useCallback(() => setPomodoroRunning(false), []);
   const resetPomodoro = useCallback(() => {
     setPomodoroSeconds(pomodoroMinutes * 60);
