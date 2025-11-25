@@ -121,18 +121,46 @@ export default function StreakPage() {
           Geri Dön
         </Button>
 
-        <Card className="bg-gradient-to-r from-orange-500/20 to-red-500/20 border-orange-500/30">
-          <CardContent className="p-6">
+        <Card className="bg-gradient-to-b from-orange-500/10 via-red-500/20 to-yellow-500/10 border-orange-500/30 overflow-hidden">
+          <CardContent className="p-8">
             <div className="flex flex-col items-center justify-center">
               <div className="relative">
-                <Flame className="h-32 w-32 text-orange-500 drop-shadow-[0_0_15px_rgba(249,115,22,0.5)]" />
-                <div className="absolute inset-0 flex items-center justify-center pt-4">
-                  <span className="text-4xl font-bold text-white drop-shadow-lg">
+                <div className="absolute inset-0 blur-2xl bg-gradient-to-t from-yellow-500/40 via-orange-500/50 to-red-500/40 rounded-full scale-110 animate-pulse" />
+                <svg 
+                  viewBox="0 0 24 24" 
+                  className="h-36 w-36 relative z-10 drop-shadow-[0_0_25px_rgba(251,146,60,0.8)]"
+                  style={{ filter: 'drop-shadow(0 0 10px rgba(251,146,60,0.6))' }}
+                >
+                  <defs>
+                    <linearGradient id="flameGradient" x1="0%" y1="100%" x2="0%" y2="0%">
+                      <stop offset="0%" stopColor="#fbbf24" />
+                      <stop offset="30%" stopColor="#f97316" />
+                      <stop offset="60%" stopColor="#ea580c" />
+                      <stop offset="100%" stopColor="#dc2626" />
+                    </linearGradient>
+                    <linearGradient id="flameInner" x1="0%" y1="100%" x2="0%" y2="0%">
+                      <stop offset="0%" stopColor="#fef3c7" />
+                      <stop offset="50%" stopColor="#fcd34d" />
+                      <stop offset="100%" stopColor="#fb923c" />
+                    </linearGradient>
+                  </defs>
+                  <path 
+                    d="M12 2C10.5 4 9 5.5 9 8c0 1.5 0.5 2.5 1 3.5-1-0.5-2-2-2-4 0 0-2 2-2 5s1.5 5 3 6c-1-1-1.5-2.5-1.5-4 0-2 1.5-3.5 2.5-4.5 0 2 1 3.5 1 5.5 0 1.5-0.5 2.5-1 3.5 1 0.5 2.5 0.5 4 0-0.5-1-1-2-1-3.5 0-2 1-3.5 1-5.5 1 1 2.5 2.5 2.5 4.5 0 1.5-0.5 3-1.5 4 1.5-1 3-3 3-6s-2-5-2-5c0 2-1 3.5-2 4-0.5-1 1-2 1-3.5 0-2.5-1.5-4-3-6z" 
+                    fill="url(#flameGradient)"
+                  />
+                  <path 
+                    d="M12 8c-0.5 1-1 2-1 3.5 0 2 1 3 1.5 4 0.5-1 1.5-2 1.5-4 0-1.5-0.5-2.5-1-3.5-0.3 0.5-0.7 0.5-1 0z" 
+                    fill="url(#flameInner)"
+                    opacity="0.9"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center z-20">
+                  <span className="text-4xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] mt-2">
                     {streakData?.streak ?? 0}
                   </span>
                 </div>
               </div>
-              <div className="text-orange-300 text-lg mt-2">Günlük Seri</div>
+              <div className="text-orange-300 text-xl font-semibold mt-4">Günlük Seri</div>
             </div>
             <p className="text-center text-orange-200/70 mt-4 text-sm">
               Her gün çalışarak serini sürdür!
