@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
+import { useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Calculator, BookOpen, GraduationCap } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { ArrowLeft, Calculator, BookOpen, GraduationCap, Save } from "lucide-react";
 
 type ExamType = "TYT" | "AYT" | null;
 type AYTField = "sozel" | "esit" | "sayisal" | null;
@@ -69,12 +73,48 @@ function calculateTotalNet(scores: Record<string, SubjectScore>): number {
 
 export default function NetTrackingPage() {
   const [, navigate] = useLocation();
+  const { toast } = useToast();
   const [examType, setExamType] = useState<ExamType>(null);
   const [aytField, setAytField] = useState<AYTField>(null);
   const [tytScores, setTytScores] = useState<Record<string, SubjectScore>>(
     getInitialScores(TYT_SUBJECTS)
   );
   const [aytScores, setAytScores] = useState<Record<string, SubjectScore>>({});
+  const [examDate, setExamDate] = useState(new Date().toISOString().split("T")[0]);
+  const [publisher, setPublisher] = useState("");
+
+  const saveMutation = useMutation({
+    mutationFn: async (data: {
+      examType: string;
+      aytField: string | null;
+      date: string;
+      publisher: string;
+      totalNet: string;
+      subjectScores: Record<string, { correct: number; wrong: number; net: number }>;
+    }) => {
+      return apiRequest("POST", "/api/net-results", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/net-results"] });
+      toast({
+        title: "Kaydedildi!",
+        description: "Deneme sonucu başarıyla kaydedildi.",
+      });
+      setExamType(null);
+      setAytField(null);
+      setTytScores(getInitialScores(TYT_SUBJECTS));
+      setAytScores({});
+      setPublisher("");
+      setExamDate(new Date().toISOString().split("T")[0]);
+    },
+    onError: () => {
+      toast({
+        title: "Hata!",
+        description: "Deneme sonucu kaydedilemedi.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleExamTypeChange = (type: ExamType) => {
     setExamType(type);
@@ -110,19 +150,6 @@ export default function NetTrackingPage() {
     setScores((prev) => {
       const current = prev[subjectName];
       const newScore = { ...current, [field]: value };
-      
-      const otherFields = ["correct", "wrong", "blank"].filter((f) => f !== field) as Array<"correct" | "wrong" | "blank">;
-      const usedQuestions = newScore[field];
-      const remainingQuestions = maxQuestions - usedQuestions;
-      
-      const otherFieldsTotal = otherFields.reduce((sum, f) => sum + newScore[f], 0);
-      
-      if (otherFieldsTotal > remainingQuestions) {
-        const ratio = remainingQuestions / otherFieldsTotal;
-        otherFields.forEach((f) => {
-          newScore[f] = Math.floor(newScore[f] * ratio);
-        });
-      }
       
       const totalUsed = newScore.correct + newScore.wrong + newScore.blank;
       if (totalUsed !== maxQuestions) {
@@ -172,10 +199,42 @@ export default function NetTrackingPage() {
     return aytScores;
   };
 
+  const handleSave = () => {
+    if (!publisher.trim()) {
+      toast({
+        title: "Hata!",
+        description: "Lütfen yayın adı girin.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const scores = getCurrentScores();
+    const subjectScores: Record<string, { correct: number; wrong: number; net: number }> = {};
+    
+    Object.entries(scores).forEach(([name, score]) => {
+      subjectScores[name] = {
+        correct: score.correct,
+        wrong: score.wrong,
+        net: calculateNet(score),
+      };
+    });
+
+    saveMutation.mutate({
+      examType: examType!,
+      aytField: aytField,
+      date: examDate,
+      publisher: publisher.trim(),
+      totalNet: totalNet.toFixed(2),
+      subjectScores,
+    });
+  };
+
   const subjects = getCurrentSubjects();
   const scores = getCurrentScores();
   const totalNet = calculateTotalNet(scores);
   const totalQuestions = subjects.reduce((sum, s) => sum + s.maxQuestions, 0);
+  const canSave = subjects.length > 0 && publisher.trim() !== "";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -270,6 +329,34 @@ export default function NetTrackingPage() {
 
             {subjects.length > 0 && (
               <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="examDate" className="text-sm font-medium">
+                      Deneme Tarihi
+                    </Label>
+                    <Input
+                      id="examDate"
+                      type="date"
+                      value={examDate}
+                      onChange={(e) => setExamDate(e.target.value)}
+                      className="bg-white dark:bg-gray-800"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="publisher" className="text-sm font-medium">
+                      Yayın Adı
+                    </Label>
+                    <Input
+                      id="publisher"
+                      type="text"
+                      value={publisher}
+                      onChange={(e) => setPublisher(e.target.value)}
+                      placeholder="Örn: 3D, Limit, Palme..."
+                      className="bg-white dark:bg-gray-800"
+                    />
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-4 gap-2 text-xs font-medium text-muted-foreground text-center mb-2">
                   <div>Ders</div>
                   <div>Doğru</div>
@@ -352,6 +439,15 @@ export default function NetTrackingPage() {
                     </div>
                   </div>
                 </div>
+
+                <Button
+                  onClick={handleSave}
+                  disabled={!canSave || saveMutation.isPending}
+                  className="w-full bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  {saveMutation.isPending ? "Kaydediliyor..." : "Denemeyi Kaydet"}
+                </Button>
               </>
             )}
 
