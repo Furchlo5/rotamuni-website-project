@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CheckCircle2, BarChart3, Clock, ListTodo } from "lucide-react";
@@ -5,17 +6,77 @@ import logoImage from "@assets/Screenshot 2025-11-25 at 09.35 Background Removed
 import backgroundVideo from "@assets/main_video_1764052786108.mp4";
 
 export default function Landing() {
+  const video1Ref = useRef<HTMLVideoElement>(null);
+  const video2Ref = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video1 = video1Ref.current;
+    const video2 = video2Ref.current;
+    if (!video1 || !video2) return;
+
+    const crossfadeDuration = 1.5;
+
+    const handleTimeUpdate = (activeVideo: HTMLVideoElement, standbyVideo: HTMLVideoElement) => {
+      const timeRemaining = activeVideo.duration - activeVideo.currentTime;
+      
+      if (timeRemaining <= crossfadeDuration && standbyVideo.paused) {
+        standbyVideo.currentTime = 0;
+        standbyVideo.play();
+        standbyVideo.style.opacity = "0";
+        
+        const fadeInterval = setInterval(() => {
+          const remaining = activeVideo.duration - activeVideo.currentTime;
+          const progress = 1 - (remaining / crossfadeDuration);
+          
+          if (progress >= 0 && progress <= 1) {
+            standbyVideo.style.opacity = String(progress);
+            activeVideo.style.opacity = String(1 - progress);
+          }
+          
+          if (remaining <= 0.05) {
+            clearInterval(fadeInterval);
+            activeVideo.pause();
+            activeVideo.style.opacity = "0";
+            standbyVideo.style.opacity = "1";
+          }
+        }, 50);
+      }
+    };
+
+    video1.addEventListener("timeupdate", () => handleTimeUpdate(video1, video2));
+    video2.addEventListener("timeupdate", () => handleTimeUpdate(video2, video1));
+
+    video1.style.opacity = "1";
+    video2.style.opacity = "0";
+    video1.play();
+
+    return () => {
+      video1.removeEventListener("timeupdate", () => handleTimeUpdate(video1, video2));
+      video2.removeEventListener("timeupdate", () => handleTimeUpdate(video2, video1));
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#0a1628] relative">
-      {/* Background Video */}
+      {/* Background Video with Seamless Loop */}
       <div className="fixed inset-0 z-0 overflow-hidden">
         <video
-          autoPlay
-          loop
+          ref={video1Ref}
           muted
           playsInline
-          className="absolute min-w-full min-h-full object-cover"
-          data-testid="video-background"
+          className="absolute min-w-full min-h-full object-cover transition-opacity duration-500"
+          style={{ opacity: 1 }}
+          data-testid="video-background-1"
+        >
+          <source src={backgroundVideo} type="video/mp4" />
+        </video>
+        <video
+          ref={video2Ref}
+          muted
+          playsInline
+          className="absolute min-w-full min-h-full object-cover transition-opacity duration-500"
+          style={{ opacity: 0 }}
+          data-testid="video-background-2"
         >
           <source src={backgroundVideo} type="video/mp4" />
         </video>
