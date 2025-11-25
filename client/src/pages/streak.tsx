@@ -125,37 +125,51 @@ export default function StreakPage() {
           <CardContent className="p-8">
             <div className="flex flex-col items-center justify-center">
               <div className="relative">
-                <div className="absolute inset-0 blur-2xl bg-gradient-to-t from-yellow-500/40 via-orange-500/50 to-red-500/40 rounded-full scale-110 animate-pulse" />
+                <div className="absolute inset-0 blur-3xl bg-gradient-to-t from-yellow-400/60 via-orange-500/70 to-red-500/50 rounded-full scale-125 animate-pulse" />
                 <svg 
-                  viewBox="0 0 24 24" 
-                  className="h-36 w-36 relative z-10 drop-shadow-[0_0_25px_rgba(251,146,60,0.8)]"
-                  style={{ filter: 'drop-shadow(0 0 10px rgba(251,146,60,0.6))' }}
+                  viewBox="0 0 64 64" 
+                  className="h-40 w-40 relative z-10"
+                  style={{ filter: 'drop-shadow(0 0 20px rgba(251,146,60,0.8)) drop-shadow(0 0 40px rgba(234,88,12,0.5))' }}
                 >
                   <defs>
-                    <linearGradient id="flameGradient" x1="0%" y1="100%" x2="0%" y2="0%">
+                    <linearGradient id="flameOuter" x1="0%" y1="100%" x2="0%" y2="0%">
                       <stop offset="0%" stopColor="#fbbf24" />
-                      <stop offset="30%" stopColor="#f97316" />
-                      <stop offset="60%" stopColor="#ea580c" />
+                      <stop offset="40%" stopColor="#f97316" />
+                      <stop offset="70%" stopColor="#ea580c" />
                       <stop offset="100%" stopColor="#dc2626" />
                     </linearGradient>
-                    <linearGradient id="flameInner" x1="0%" y1="100%" x2="0%" y2="0%">
-                      <stop offset="0%" stopColor="#fef3c7" />
-                      <stop offset="50%" stopColor="#fcd34d" />
-                      <stop offset="100%" stopColor="#fb923c" />
+                    <linearGradient id="flameMiddle" x1="0%" y1="100%" x2="0%" y2="0%">
+                      <stop offset="0%" stopColor="#fde047" />
+                      <stop offset="50%" stopColor="#fb923c" />
+                      <stop offset="100%" stopColor="#f97316" />
+                    </linearGradient>
+                    <linearGradient id="flameCore" x1="0%" y1="100%" x2="0%" y2="0%">
+                      <stop offset="0%" stopColor="#fefce8" />
+                      <stop offset="50%" stopColor="#fef08a" />
+                      <stop offset="100%" stopColor="#fcd34d" />
                     </linearGradient>
                   </defs>
                   <path 
-                    d="M12 2C10.5 4 9 5.5 9 8c0 1.5 0.5 2.5 1 3.5-1-0.5-2-2-2-4 0 0-2 2-2 5s1.5 5 3 6c-1-1-1.5-2.5-1.5-4 0-2 1.5-3.5 2.5-4.5 0 2 1 3.5 1 5.5 0 1.5-0.5 2.5-1 3.5 1 0.5 2.5 0.5 4 0-0.5-1-1-2-1-3.5 0-2 1-3.5 1-5.5 1 1 2.5 2.5 2.5 4.5 0 1.5-0.5 3-1.5 4 1.5-1 3-3 3-6s-2-5-2-5c0 2-1 3.5-2 4-0.5-1 1-2 1-3.5 0-2.5-1.5-4-3-6z" 
-                    fill="url(#flameGradient)"
+                    d="M32 4 C26 12 22 18 22 26 C22 32 25 36 28 38 C24 36 20 30 20 24 C20 24 14 30 14 40 C14 52 24 58 32 60 C40 58 50 52 50 40 C50 30 44 24 44 24 C44 30 40 36 36 38 C39 36 42 32 42 26 C42 18 38 12 32 4Z" 
+                    fill="url(#flameOuter)"
                   />
                   <path 
-                    d="M12 8c-0.5 1-1 2-1 3.5 0 2 1 3 1.5 4 0.5-1 1.5-2 1.5-4 0-1.5-0.5-2.5-1-3.5-0.3 0.5-0.7 0.5-1 0z" 
-                    fill="url(#flameInner)"
-                    opacity="0.9"
+                    d="M32 14 C28 20 26 24 26 30 C26 34 28 37 30 39 C27 37 24 33 24 28 C24 28 20 32 20 40 C20 48 26 52 32 54 C38 52 44 48 44 40 C44 32 40 28 40 28 C40 33 37 37 34 39 C36 37 38 34 38 30 C38 24 36 20 32 14Z" 
+                    fill="url(#flameMiddle)"
+                  />
+                  <path 
+                    d="M32 26 C30 30 28 33 28 37 C28 42 30 46 32 48 C34 46 36 42 36 37 C36 33 34 30 32 26Z" 
+                    fill="url(#flameCore)"
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center z-20">
-                  <span className="text-4xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] mt-2">
+                  <span 
+                    className="text-5xl font-black mt-3"
+                    style={{ 
+                      color: '#1a1a2e',
+                      textShadow: '0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(251,191,36,0.6), 0 2px 0 rgba(255,255,255,0.4)'
+                    }}
+                  >
                     {streakData?.streak ?? 0}
                   </span>
                 </div>
