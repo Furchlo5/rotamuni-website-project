@@ -92,7 +92,7 @@ export default function Landing() {
               <img 
                 src={logoImage} 
                 alt="RotamUni Logo" 
-                className="h-48 w-48 object-contain"
+                className="h-64 w-64 md:h-80 md:w-80 object-contain"
                 data-testid="img-hero-logo"
               />
             </div>
