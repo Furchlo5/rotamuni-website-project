@@ -21,13 +21,13 @@ import type { QuestionCount, TimerSession } from "@shared/schema";
 
 const COLORS = [
   "#14b8a6",
-  "#f97316",
-  "#06b6d4",
-  "#fb923c",
   "#0891b2",
-  "#ea580c",
+  "#06b6d4",
   "#22d3ee",
-  "#f59e0b",
+  "#2dd4bf",
+  "#5eead4",
+  "#99f6e4",
+  "#0d9488",
 ];
 
 type Period = "daily" | "weekly" | "monthly";
@@ -171,12 +171,12 @@ export default function AnalysisPage() {
 
           <Card className="p-6 shadow-md">
             <div className="flex items-start gap-3">
-              <div className="p-3 bg-orange-500/20 rounded-lg">
-                <Clock className="w-6 h-6 text-orange-400" />
+              <div className="p-3 bg-cyan-500/20 rounded-lg">
+                <Clock className="w-6 h-6 text-cyan-400" />
               </div>
               <div>
                 <div className="text-sm text-muted-foreground">Çalışma Süresi</div>
-                <div className="text-2xl font-bold text-orange-400" data-testid="text-total-time">
+                <div className="text-2xl font-bold text-cyan-400" data-testid="text-total-time">
                   {formatTime(totalTime)}
                 </div>
               </div>

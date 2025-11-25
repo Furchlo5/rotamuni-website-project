@@ -141,7 +141,7 @@ export default function CounterPage() {
             <Button
               onClick={handleSave}
               disabled={!inputValue || updateMutation.isPending}
-              className="w-full h-14 bg-gradient-to-r from-[#14b8a6] to-[#0891b2] hover:from-[#2dd4bf] hover:to-[#06b6d4] text-white font-semibold text-lg shadow-lg shadow-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-14 bg-gradient-to-r from-[#14b8a6] to-[#0891b2] hover:from-[#2dd4bf] hover:to-[#06b6d4] text-white font-semibold text-lg shadow-lg shadow-teal-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
               data-testid="button-save"
             >
               <Check className="w-5 h-5 mr-2" />

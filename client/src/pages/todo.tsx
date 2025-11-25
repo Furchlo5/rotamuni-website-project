@@ -117,6 +117,7 @@ export default function TodoPage() {
             <Button
               onClick={handleAddTodo}
               disabled={!newTodo.trim() || addMutation.isPending}
+              className="bg-gradient-to-r from-[#14b8a6] to-[#0891b2] hover:from-[#2dd4bf] hover:to-[#06b6d4] text-white"
               data-testid="button-add-todo"
             >
               <Plus className="w-5 h-5" />
