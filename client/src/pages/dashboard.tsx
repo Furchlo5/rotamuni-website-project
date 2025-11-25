@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { Card } from "@/components/ui/card";
-import { ClipboardList, Calculator, Clock, BarChart, Flame } from "lucide-react";
+import { ClipboardList, Calculator, Clock, BarChart, Flame, Target } from "lucide-react";
 
 const features = [
   {
@@ -32,6 +32,12 @@ const features = [
     description: "Günlük çalışma serinizi takip edin",
     path: "/streak",
     icon: Flame,
+  },
+  {
+    title: "Net Takibi",
+    description: "TYT ve AYT netlerinizi hesaplayın",
+    path: "/net-tracking",
+    icon: Target,
   },
 ];
 

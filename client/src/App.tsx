@@ -13,6 +13,7 @@ import CounterPage from "@/pages/counter";
 import TimerPage from "@/pages/timer";
 import AnalysisPage from "@/pages/analysis";
 import StreakPage from "@/pages/streak";
+import NetTrackingPage from "@/pages/net-tracking";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -40,6 +41,7 @@ function Router() {
             <Route path="/timer" component={TimerPage} />
             <Route path="/analysis" component={AnalysisPage} />
             <Route path="/streak" component={StreakPage} />
+            <Route path="/net-tracking" component={NetTrackingPage} />
           </>
         )}
         <Route component={NotFound} />
