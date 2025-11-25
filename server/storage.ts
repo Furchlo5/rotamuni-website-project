@@ -181,6 +181,11 @@ export class MemStorage implements IStorage {
     
     let streak = 0;
     const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    
+    if (!studyDates.has(todayStr)) {
+      return 0;
+    }
     
     for (let i = 0; i < 365; i++) {
       const checkDate = new Date(today);
@@ -189,7 +194,7 @@ export class MemStorage implements IStorage {
       
       if (studyDates.has(dateStr)) {
         streak++;
-      } else if (i > 0) {
+      } else {
         break;
       }
     }
@@ -380,6 +385,11 @@ export class DbStorage implements IStorage {
     
     let streak = 0;
     const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    
+    if (!studyDates.has(todayStr)) {
+      return 0;
+    }
     
     for (let i = 0; i < 365; i++) {
       const checkDate = new Date(today);
@@ -388,7 +398,7 @@ export class DbStorage implements IStorage {
       
       if (studyDates.has(dateStr)) {
         streak++;
-      } else if (i > 0) {
+      } else {
         break;
       }
     }
