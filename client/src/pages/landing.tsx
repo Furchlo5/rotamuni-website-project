@@ -107,7 +107,7 @@ export default function Landing() {
               <Button
                 size="lg"
                 onClick={() => window.location.href = "/api/login"}
-                className="bg-gradient-to-r from-[#14b8a6] to-[#0891b2] hover:from-[#2dd4bf] hover:to-[#06b6d4] text-white text-lg h-14 px-8"
+                className="bg-gradient-to-r from-[#14b8a6] to-[#0891b2] hover:from-[#2dd4bf] hover:to-[#06b6d4] text-white text-lg h-14 px-8 border-2 border-[#14b8a6] ring-[#14b8a6] focus:ring-[#14b8a6]"
                 data-testid="button-get-started"
               >
                 Hemen Başla
@@ -206,7 +206,7 @@ export default function Landing() {
           <Button
             size="lg"
             onClick={() => window.location.href = "/api/login"}
-            className="bg-white text-[#14b8a6] hover:bg-white/90 text-lg h-14 px-8"
+            className="bg-white text-[#14b8a6] hover:bg-white/90 text-lg h-14 px-8 border-2 border-white ring-white focus:ring-white"
             data-testid="button-cta"
           >
             Ücretsiz Başla
