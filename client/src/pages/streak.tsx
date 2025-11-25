@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,7 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Flame, ChevronLeft, ChevronRight, Check, Clock } from "lucide-react";
+import { Flame, ChevronLeft, ChevronRight, Check, Clock, ArrowLeft } from "lucide-react";
 
 interface DailyStudyData {
   date: string;
@@ -40,10 +41,11 @@ function formatDuration(seconds: number): string {
 }
 
 export default function StreakPage() {
+  const [, navigate] = useLocation();
   const now = new Date();
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
-  const [selectedDay, setSelectedDay] = useState<DailyStudyData | null>(null);
+  const [selectedDay, setSelectedDay] = useState<{ date: string; totalSeconds: number } | null>(null);
 
   const { data: streakData } = useQuery<{ streak: number }>({
     queryKey: ["/api/streak"],
@@ -101,9 +103,7 @@ export default function StreakPage() {
   const handleDayClick = (day: number) => {
     const dateStr = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const data = studyDataMap.get(dateStr);
-    if (data) {
-      setSelectedDay(data);
-    }
+    setSelectedDay(data || { date: dateStr, totalSeconds: 0 });
   };
 
   const totalMonthlySeconds = monthlyData.reduce((sum, d) => sum + d.totalSeconds, 0);
@@ -112,6 +112,15 @@ export default function StreakPage() {
   return (
     <div className="min-h-screen bg-[#0a1628] p-4 md:p-6">
       <div className="max-w-4xl mx-auto space-y-6">
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/")}
+          className="text-white hover:bg-[#1e3a5f] flex items-center gap-2"
+        >
+          <ArrowLeft className="h-5 w-5" />
+          Geri Dön
+        </Button>
+
         <Card className="bg-gradient-to-r from-orange-500/20 to-red-500/20 border-orange-500/30">
           <CardContent className="p-6">
             <div className="flex items-center justify-center gap-4">
@@ -216,18 +225,17 @@ export default function StreakPage() {
                 return (
                   <button
                     key={day}
-                    onClick={() => hasStudied && handleDayClick(day)}
-                    disabled={!hasStudied}
+                    onClick={() => handleDayClick(day)}
                     className={`
                       aspect-square rounded-lg flex flex-col items-center justify-center relative
-                      transition-all duration-200
+                      transition-all duration-200 cursor-pointer
                       ${hasStudied 
-                        ? 'bg-teal-500/30 hover:bg-teal-500/50 cursor-pointer' 
-                        : 'bg-[#1e3a5f]/50'}
+                        ? 'bg-teal-500/30 hover:bg-teal-500/50' 
+                        : 'bg-[#1e3a5f]/50 hover:bg-[#2a4a6f]/50'}
                       ${isToday ? 'ring-2 ring-teal-400' : ''}
                     `}
                   >
-                    <span className={`text-sm ${hasStudied ? 'text-white' : 'text-white/40'}`}>
+                    <span className={`text-sm ${hasStudied ? 'text-white' : 'text-white/60'}`}>
                       {day}
                     </span>
                     {hasStudied && (
@@ -279,10 +287,21 @@ export default function StreakPage() {
           </DialogHeader>
           <div className="py-6">
             <div className="text-center">
-              <div className="text-4xl font-bold text-teal-400 mb-2">
-                {selectedDay && formatDuration(selectedDay.totalSeconds)}
-              </div>
-              <p className="text-white/60">Bu gün toplam çalışma süreniz</p>
+              {selectedDay && selectedDay.totalSeconds > 0 ? (
+                <>
+                  <div className="text-4xl font-bold text-teal-400 mb-2">
+                    {formatDuration(selectedDay.totalSeconds)}
+                  </div>
+                  <p className="text-white/60">Bu gün toplam çalışma süreniz</p>
+                </>
+              ) : (
+                <>
+                  <div className="text-4xl font-bold text-white/40 mb-2">
+                    0 dakika
+                  </div>
+                  <p className="text-white/60">Bu gün çalışma kaydı yok</p>
+                </>
+              )}
             </div>
           </div>
         </DialogContent>
