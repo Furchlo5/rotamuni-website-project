@@ -200,6 +200,24 @@ export default function NetTrackingPage() {
   };
 
   const handleSave = () => {
+    if (!examType) {
+      toast({
+        title: "Hata!",
+        description: "Lütfen sınav türünü seçin.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (examType === "AYT" && !aytField) {
+      toast({
+        title: "Hata!",
+        description: "Lütfen alan seçin.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!publisher.trim()) {
       toast({
         title: "Hata!",
@@ -221,7 +239,7 @@ export default function NetTrackingPage() {
     });
 
     saveMutation.mutate({
-      examType: examType!,
+      examType: examType,
       aytField: aytField,
       date: examDate,
       publisher: publisher.trim(),
@@ -234,7 +252,8 @@ export default function NetTrackingPage() {
   const scores = getCurrentScores();
   const totalNet = calculateTotalNet(scores);
   const totalQuestions = subjects.reduce((sum, s) => sum + s.maxQuestions, 0);
-  const canSave = subjects.length > 0 && publisher.trim() !== "";
+  const isExamTypeValid = examType !== null && (examType === "TYT" || (examType === "AYT" && aytField !== null));
+  const canSave = isExamTypeValid && subjects.length > 0 && publisher.trim() !== "";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">

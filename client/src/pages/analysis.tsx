@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, TrendingUp, Clock, Target } from "lucide-react";
+import { ArrowLeft, TrendingUp, Clock, Target, Calculator, X } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { apiRequest } from "@/lib/queryClient";
 import {
   BarChart,
   Bar,
@@ -16,8 +17,10 @@ import {
   PieChart,
   Pie,
   Cell,
+  LineChart,
+  Line,
 } from "recharts";
-import type { QuestionCount, TimerSession } from "@shared/schema";
+import type { QuestionCount, TimerSession, NetResult } from "@shared/schema";
 
 const SUBJECT_COLORS: Record<string, string> = {
   "Matematik": "#14b8a6",
@@ -53,8 +56,13 @@ const getSubjectColor = (subject: string, index: number): string => {
 
 type Period = "daily" | "weekly" | "monthly";
 
+interface NetResultWithDate extends NetResult {
+  formattedDate: string;
+}
+
 export default function AnalysisPage() {
   const [period, setPeriod] = useState<Period>("daily");
+  const [selectedResult, setSelectedResult] = useState<NetResult | null>(null);
   const today = new Date();
   
   const getDateRange = () => {
@@ -94,6 +102,34 @@ export default function AnalysisPage() {
       );
       if (!response.ok) throw new Error("Failed to fetch stats");
       return response.json();
+    },
+  });
+
+  const { data: netResults = [] } = useQuery<NetResult[]>({
+    queryKey: ["/api/net-results"],
+    queryFn: async () => {
+      const response = await fetch("/api/net-results", {
+        credentials: "include",
+      });
+      if (response.status === 401) return [];
+      if (!response.ok) throw new Error("Failed to fetch net results");
+      const data = await response.json();
+      return data.map((result: NetResult) => ({
+        ...result,
+        totalNet: String(result.totalNet),
+        subjectScores: typeof result.subjectScores === 'object' 
+          ? Object.fromEntries(
+              Object.entries(result.subjectScores as Record<string, any>).map(([key, value]) => [
+                key,
+                {
+                  correct: Number(value.correct) || 0,
+                  wrong: Number(value.wrong) || 0,
+                  net: Number(value.net) || 0,
+                }
+              ])
+            )
+          : result.subjectScores,
+      }));
     },
   });
 
@@ -137,6 +173,51 @@ export default function AnalysisPage() {
     daily: "Bugün",
     weekly: "Bu Hafta",
     monthly: "Bu Ay",
+  };
+
+  const tytResults = netResults
+    .filter((r) => r.examType === "TYT")
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  const aytResults = netResults
+    .filter((r) => r.examType === "AYT")
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  const formatChartDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return `${date.getDate()}/${date.getMonth() + 1}`;
+  };
+
+  const tytChartData = tytResults
+    .map((r) => ({
+      ...r,
+      formattedDate: formatChartDate(r.date),
+      net: parseFloat(r.totalNet),
+    }))
+    .filter((r) => !isNaN(r.net));
+
+  const aytChartData = aytResults
+    .map((r) => ({
+      ...r,
+      formattedDate: formatChartDate(r.date),
+      net: parseFloat(r.totalNet),
+    }))
+    .filter((r) => !isNaN(r.net));
+
+  const handlePointClick = (data: any) => {
+    if (data && data.activePayload && data.activePayload[0]) {
+      const result = data.activePayload[0].payload as NetResult;
+      setSelectedResult(result);
+    }
+  };
+
+  const getAytFieldLabel = (field: string | null) => {
+    switch (field) {
+      case "sozel": return "Sözel";
+      case "esit": return "Eşit Ağırlık";
+      case "sayisal": return "Sayısal";
+      default: return "";
+    }
   };
 
   return (
@@ -241,114 +322,264 @@ export default function AnalysisPage() {
             </div>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="p-6 shadow-md">
-              <h3 className="font-semibold text-lg mb-4">
-                Ders Bazında Soru Dağılımı
-              </h3>
-              {questionData.length > 0 ? (
-                <>
-                  <ResponsiveContainer width="100%" height={250}>
-                    <BarChart data={questionData}>
-                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                      <XAxis
-                        dataKey="subject"
-                        tick={{ fontSize: 11 }}
-                        angle={-45}
-                        textAnchor="end"
-                        height={70}
-                      />
-                      <YAxis />
-                      <Tooltip formatter={(value: number) => [`${value} soru`, 'Sayı']} />
-                      <Bar dataKey="count" radius={[8, 8, 0, 0]}>
-                        {questionData.map((entry, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={getSubjectColor(entry.subject, index)}
-                          />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                  <div className="mt-4 flex flex-wrap justify-center gap-3">
-                    {questionData.map((entry, index) => (
-                      <div key={entry.subject} className="flex items-center gap-2">
-                        <div 
-                          className="w-3 h-3 rounded-full" 
-                          style={{ backgroundColor: getSubjectColor(entry.subject, index) }}
+          <>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              <Card className="p-6 shadow-md">
+                <h3 className="font-semibold text-lg mb-4">
+                  Ders Bazında Soru Dağılımı
+                </h3>
+                {questionData.length > 0 ? (
+                  <>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <BarChart data={questionData}>
+                        <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                        <XAxis
+                          dataKey="subject"
+                          tick={{ fontSize: 11 }}
+                          angle={-45}
+                          textAnchor="end"
+                          height={70}
                         />
-                        <span className="text-sm text-muted-foreground">
-                          {entry.subject}
-                        </span>
-                      </div>
-                    ))}
+                        <YAxis />
+                        <Tooltip formatter={(value: number) => [`${value} soru`, 'Sayı']} />
+                        <Bar dataKey="count" radius={[8, 8, 0, 0]}>
+                          {questionData.map((entry, index) => (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={getSubjectColor(entry.subject, index)}
+                            />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                    <div className="mt-4 flex flex-wrap justify-center gap-3">
+                      {questionData.map((entry, index) => (
+                        <div key={entry.subject} className="flex items-center gap-2">
+                          <div 
+                            className="w-3 h-3 rounded-full" 
+                            style={{ backgroundColor: getSubjectColor(entry.subject, index) }}
+                          />
+                          <span className="text-sm text-muted-foreground">
+                            {entry.subject}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div className="h-[250px] flex flex-col items-center justify-center">
+                    <Target className="w-12 h-12 text-muted-foreground/30 mb-4" />
+                    <p className="text-muted-foreground text-sm">Henüz soru kaydı yok</p>
                   </div>
-                </>
-              ) : (
-                <div className="h-[250px] flex flex-col items-center justify-center">
-                  <Target className="w-12 h-12 text-muted-foreground/30 mb-4" />
-                  <p className="text-muted-foreground text-sm">Henüz soru kaydı yok</p>
-                </div>
-              )}
-            </Card>
+                )}
+              </Card>
 
-            <Card className="p-6 shadow-md">
-              <h3 className="font-semibold text-lg mb-4">
-                Ders Bazında Çalışma Süresi
-              </h3>
-              {timeData.length > 0 ? (
-                <>
-                  <ResponsiveContainer width="100%" height={250}>
-                    <PieChart>
-                      <Pie
-                        data={timeData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={90}
-                        innerRadius={50}
-                        fill="#8884d8"
-                        dataKey="duration"
-                        paddingAngle={2}
-                      >
-                        {timeData.map((entry, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={getSubjectColor(entry.subject, index)}
-                          />
-                        ))}
-                      </Pie>
-                      <Tooltip 
-                        formatter={(value: number) => [`${value} dakika`, 'Süre']}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div className="mt-4 flex flex-wrap justify-center gap-3">
-                    {timeData.map((entry, index) => (
-                      <div key={entry.subject} className="flex items-center gap-2">
-                        <div 
-                          className="w-3 h-3 rounded-full" 
-                          style={{ backgroundColor: getSubjectColor(entry.subject, index) }}
+              <Card className="p-6 shadow-md">
+                <h3 className="font-semibold text-lg mb-4">
+                  Ders Bazında Çalışma Süresi
+                </h3>
+                {timeData.length > 0 ? (
+                  <>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <PieChart>
+                        <Pie
+                          data={timeData}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          outerRadius={90}
+                          innerRadius={50}
+                          fill="#8884d8"
+                          dataKey="duration"
+                          paddingAngle={2}
+                        >
+                          {timeData.map((entry, index) => (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={getSubjectColor(entry.subject, index)}
+                            />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          formatter={(value: number) => [`${value} dakika`, 'Süre']}
                         />
-                        <span className="text-sm text-muted-foreground">
-                          {entry.subject} ({entry.duration}dk)
-                        </span>
-                      </div>
-                    ))}
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className="mt-4 flex flex-wrap justify-center gap-3">
+                      {timeData.map((entry, index) => (
+                        <div key={entry.subject} className="flex items-center gap-2">
+                          <div 
+                            className="w-3 h-3 rounded-full" 
+                            style={{ backgroundColor: getSubjectColor(entry.subject, index) }}
+                          />
+                          <span className="text-sm text-muted-foreground">
+                            {entry.subject} ({entry.duration}dk)
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div className="h-[250px] flex flex-col items-center justify-center">
+                    <div className="w-32 h-32 rounded-full border-4 border-dashed border-muted-foreground/30 flex items-center justify-center mb-4">
+                      <Clock className="w-12 h-12 text-muted-foreground/30" />
+                    </div>
+                    <p className="text-muted-foreground text-sm">Henüz çalışma kaydı yok</p>
                   </div>
-                </>
-              ) : (
-                <div className="h-[250px] flex flex-col items-center justify-center">
-                  <div className="w-32 h-32 rounded-full border-4 border-dashed border-muted-foreground/30 flex items-center justify-center mb-4">
-                    <Clock className="w-12 h-12 text-muted-foreground/30" />
+                )}
+              </Card>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card className="p-6 shadow-md">
+                <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                  <Calculator className="w-5 h-5 text-teal-500" />
+                  TYT Net Gelişimi
+                </h3>
+                {tytChartData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={250}>
+                    <LineChart data={tytChartData} onClick={handlePointClick}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                      <XAxis 
+                        dataKey="formattedDate" 
+                        tick={{ fontSize: 11 }}
+                      />
+                      <YAxis domain={[0, 'auto']} />
+                      <Tooltip 
+                        formatter={(value: number) => [`${value.toFixed(2)} net`, 'Toplam']}
+                        labelFormatter={(label) => `Tarih: ${label}`}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="net" 
+                        stroke="#14b8a6" 
+                        strokeWidth={2}
+                        dot={{ fill: "#14b8a6", strokeWidth: 2, r: 5, cursor: "pointer" }}
+                        activeDot={{ r: 8, fill: "#0d9488", cursor: "pointer" }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-[250px] flex flex-col items-center justify-center">
+                    <Calculator className="w-12 h-12 text-muted-foreground/30 mb-4" />
+                    <p className="text-muted-foreground text-sm">Henüz TYT deneme sonucu yok</p>
+                    <Link href="/net-tracking">
+                      <Button variant="ghost" className="text-teal-500 hover:text-teal-600 hover:bg-teal-50 mt-2 underline">
+                        Deneme Ekle
+                      </Button>
+                    </Link>
                   </div>
-                  <p className="text-muted-foreground text-sm">Henüz çalışma kaydı yok</p>
-                </div>
-              )}
-            </Card>
-          </div>
+                )}
+              </Card>
+
+              <Card className="p-6 shadow-md">
+                <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                  <Calculator className="w-5 h-5 text-cyan-500" />
+                  AYT Net Gelişimi
+                </h3>
+                {aytChartData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={250}>
+                    <LineChart data={aytChartData} onClick={handlePointClick}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                      <XAxis 
+                        dataKey="formattedDate" 
+                        tick={{ fontSize: 11 }}
+                      />
+                      <YAxis domain={[0, 'auto']} />
+                      <Tooltip 
+                        formatter={(value: number) => [`${value.toFixed(2)} net`, 'Toplam']}
+                        labelFormatter={(label) => `Tarih: ${label}`}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="net" 
+                        stroke="#06b6d4" 
+                        strokeWidth={2}
+                        dot={{ fill: "#06b6d4", strokeWidth: 2, r: 5, cursor: "pointer" }}
+                        activeDot={{ r: 8, fill: "#0891b2", cursor: "pointer" }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-[250px] flex flex-col items-center justify-center">
+                    <Calculator className="w-12 h-12 text-muted-foreground/30 mb-4" />
+                    <p className="text-muted-foreground text-sm">Henüz AYT deneme sonucu yok</p>
+                    <Link href="/net-tracking">
+                      <Button variant="ghost" className="text-cyan-500 hover:text-cyan-600 hover:bg-cyan-50 mt-2 underline">
+                        Deneme Ekle
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+              </Card>
+            </div>
+          </>
         )}
       </div>
+
+      {selectedResult && (
+        <div 
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => setSelectedResult(null)}
+        >
+          <Card 
+            className="w-full max-w-md p-6 shadow-2xl max-h-[80vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h3 className="font-bold text-lg">
+                  {selectedResult.examType} Deneme Sonucu
+                  {selectedResult.aytField && (
+                    <span className="text-sm font-normal text-muted-foreground ml-2">
+                      ({getAytFieldLabel(selectedResult.aytField)})
+                    </span>
+                  )}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {new Date(selectedResult.date).toLocaleDateString("tr-TR")} - {selectedResult.publisher}
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSelectedResult(null)}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+
+            <div className="mb-4 p-4 bg-gradient-to-r from-teal-500 to-cyan-600 rounded-xl text-white">
+              <div className="text-sm opacity-90">Toplam Net</div>
+              <div className="text-3xl font-bold">{selectedResult.totalNet}</div>
+            </div>
+
+            <div className="space-y-2">
+              <h4 className="font-semibold text-sm text-muted-foreground">Ders Bazında Sonuçlar</h4>
+              {Object.entries(selectedResult.subjectScores as Record<string, { correct: number; wrong: number; net: number }>).map(([subject, score]) => {
+                const correct = Number(score.correct) || 0;
+                const wrong = Number(score.wrong) || 0;
+                const net = Number(score.net) || 0;
+                return (
+                  <div 
+                    key={subject}
+                    className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                  >
+                    <span className="font-medium text-sm">{subject}</span>
+                    <div className="flex items-center gap-3 text-sm">
+                      <span className="text-green-600">D: {correct}</span>
+                      <span className="text-red-500">Y: {wrong}</span>
+                      <span className={`font-bold ${net >= 0 ? 'text-teal-600' : 'text-red-500'}`}>
+                        Net: {net.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
