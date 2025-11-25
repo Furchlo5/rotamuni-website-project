@@ -240,106 +240,112 @@ export default function AnalysisPage() {
               </p>
             </div>
           </Card>
-        ) : questionData.length === 0 && timeData.length === 0 ? (
-          <Card className="p-12 shadow-md">
-            <div className="text-center">
-              <TrendingUp className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Henüz veri yok</h3>
-              <p className="text-muted-foreground">
-                Çalışmaya başladığında burada istatistiklerini görebileceksin!
-              </p>
-            </div>
-          </Card>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {questionData.length > 0 && (
-              <Card className="p-6 shadow-md">
-                <h3 className="font-semibold text-lg mb-4">
-                  Ders Bazında Soru Dağılımı
-                </h3>
-                <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={questionData}>
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                    <XAxis
-                      dataKey="subject"
-                      tick={{ fontSize: 11 }}
-                      angle={-45}
-                      textAnchor="end"
-                      height={70}
-                    />
-                    <YAxis />
-                    <Tooltip formatter={(value: number) => [`${value} soru`, 'Sayı']} />
-                    <Bar dataKey="count" radius={[8, 8, 0, 0]}>
-                      {questionData.map((entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={getSubjectColor(entry.subject, index)}
-                        />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-                <div className="mt-4 flex flex-wrap justify-center gap-3">
-                  {questionData.map((entry, index) => (
-                    <div key={entry.subject} className="flex items-center gap-2">
-                      <div 
-                        className="w-3 h-3 rounded-full" 
-                        style={{ backgroundColor: getSubjectColor(entry.subject, index) }}
+            <Card className="p-6 shadow-md">
+              <h3 className="font-semibold text-lg mb-4">
+                Ders Bazında Soru Dağılımı
+              </h3>
+              {questionData.length > 0 ? (
+                <>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <BarChart data={questionData}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                      <XAxis
+                        dataKey="subject"
+                        tick={{ fontSize: 11 }}
+                        angle={-45}
+                        textAnchor="end"
+                        height={70}
                       />
-                      <span className="text-sm text-muted-foreground">
-                        {entry.subject}
-                      </span>
-                    </div>
-                  ))}
+                      <YAxis />
+                      <Tooltip formatter={(value: number) => [`${value} soru`, 'Sayı']} />
+                      <Bar dataKey="count" radius={[8, 8, 0, 0]}>
+                        {questionData.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={getSubjectColor(entry.subject, index)}
+                          />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                  <div className="mt-4 flex flex-wrap justify-center gap-3">
+                    {questionData.map((entry, index) => (
+                      <div key={entry.subject} className="flex items-center gap-2">
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: getSubjectColor(entry.subject, index) }}
+                        />
+                        <span className="text-sm text-muted-foreground">
+                          {entry.subject}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="h-[250px] flex flex-col items-center justify-center">
+                  <Target className="w-12 h-12 text-muted-foreground/30 mb-4" />
+                  <p className="text-muted-foreground text-sm">Henüz soru kaydı yok</p>
                 </div>
-              </Card>
-            )}
+              )}
+            </Card>
 
-            {timeData.length > 0 && (
-              <Card className="p-6 shadow-md">
-                <h3 className="font-semibold text-lg mb-4">
-                  Ders Bazında Çalışma Süresi
-                </h3>
-                <ResponsiveContainer width="100%" height={250}>
-                  <PieChart>
-                    <Pie
-                      data={timeData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      outerRadius={90}
-                      innerRadius={50}
-                      fill="#8884d8"
-                      dataKey="duration"
-                      paddingAngle={2}
-                    >
-                      {timeData.map((entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={getSubjectColor(entry.subject, index)}
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      formatter={(value: number) => [`${value} dakika`, 'Süre']}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="mt-4 flex flex-wrap justify-center gap-3">
-                  {timeData.map((entry, index) => (
-                    <div key={entry.subject} className="flex items-center gap-2">
-                      <div 
-                        className="w-3 h-3 rounded-full" 
-                        style={{ backgroundColor: getSubjectColor(entry.subject, index) }}
+            <Card className="p-6 shadow-md">
+              <h3 className="font-semibold text-lg mb-4">
+                Ders Bazında Çalışma Süresi
+              </h3>
+              {timeData.length > 0 ? (
+                <>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <PieChart>
+                      <Pie
+                        data={timeData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={90}
+                        innerRadius={50}
+                        fill="#8884d8"
+                        dataKey="duration"
+                        paddingAngle={2}
+                      >
+                        {timeData.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={getSubjectColor(entry.subject, index)}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        formatter={(value: number) => [`${value} dakika`, 'Süre']}
                       />
-                      <span className="text-sm text-muted-foreground">
-                        {entry.subject} ({entry.duration}dk)
-                      </span>
-                    </div>
-                  ))}
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="mt-4 flex flex-wrap justify-center gap-3">
+                    {timeData.map((entry, index) => (
+                      <div key={entry.subject} className="flex items-center gap-2">
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: getSubjectColor(entry.subject, index) }}
+                        />
+                        <span className="text-sm text-muted-foreground">
+                          {entry.subject} ({entry.duration}dk)
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="h-[250px] flex flex-col items-center justify-center">
+                  <div className="w-32 h-32 rounded-full border-4 border-dashed border-muted-foreground/30 flex items-center justify-center mb-4">
+                    <Clock className="w-12 h-12 text-muted-foreground/30" />
+                  </div>
+                  <p className="text-muted-foreground text-sm">Henüz çalışma kaydı yok</p>
                 </div>
-              </Card>
-            )}
+              )}
+            </Card>
           </div>
         )}
       </div>
