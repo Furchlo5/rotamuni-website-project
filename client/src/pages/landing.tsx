@@ -91,17 +91,17 @@ export default function Landing() {
             <div className="flex justify-center mb-8">
               <img 
                 src={logoImage} 
-                alt="YKS Yol Arkadaşım Logo" 
+                alt="RotamUni Logo" 
                 className="h-48 w-48 object-contain"
                 data-testid="img-hero-logo"
               />
             </div>
             <h1 className="text-4xl sm:text-6xl font-bold text-white mb-6">
-              YKS Yol Arkadaşım
+              RotamUni
             </h1>
             <p className="text-xl text-white/70 mb-8 max-w-2xl mx-auto">
-              YKS sınavına hazırlanırken çalışma sürenizi, çözdüğünüz soru sayısını 
-              ve hedeflerinizi takip edin. Başarıya giden yolda yanınızdayız! 🚀
+              Üniversite sınavına hazırlanırken çalışma sürenizi, çözdüğünüz soru sayısını 
+              ve hedeflerinizi takip edin. Başarıya giden yolda yanınızdayız!
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
@@ -169,7 +169,7 @@ export default function Landing() {
                 <Clock className="h-6 w-6 text-[#14b8a6]" />
               </div>
               <h3 className="text-lg font-semibold text-white mb-2">
-                Çalışma Timer
+                Zamanlayıcı
               </h3>
               <p className="text-white/60 text-sm">
                 Çalışma sürenizi ölçün ve kaydedin
@@ -201,7 +201,7 @@ export default function Landing() {
             Hazır mısınız?
           </h2>
           <p className="text-white/90 mb-8 text-lg">
-            YKS yolculuğunuzda size eşlik edelim. Ücretsiz başlayın!
+            Üniversite yolculuğunuzda size eşlik edelim. Ücretsiz başlayın!
           </p>
           <Button
             size="lg"

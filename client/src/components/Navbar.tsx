@@ -14,17 +14,17 @@ export function Navbar({ isAuthenticated, user }: NavbarProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center gap-3">
+          <a href="/" className="flex items-center gap-3">
             <img 
               src={logoImage} 
-              alt="YKS Yol Arkadaşım Logo" 
+              alt="RotamUni Logo" 
               className="h-10 w-10 object-contain"
               data-testid="img-logo"
             />
-            <span className="text-white font-semibold text-lg hidden sm:inline">
-              YKS Yol Arkadaşım
+            <span className="text-white font-semibold text-lg">
+              RotamUni
             </span>
-          </div>
+          </a>
 
           {/* Auth Buttons */}
           <div className="flex items-center gap-3">
@@ -48,7 +48,7 @@ export function Navbar({ isAuthenticated, user }: NavbarProps) {
                   className="border-[#14b8a6] text-[#14b8a6] hover:bg-[#14b8a6]/10"
                   data-testid="button-logout"
                 >
-                  Sign Out
+                  Çıkış Yap
                 </Button>
               </>
             ) : (
@@ -60,7 +60,7 @@ export function Navbar({ isAuthenticated, user }: NavbarProps) {
                   className="text-white/80 hover:text-white hover:bg-white/10"
                   data-testid="button-signin"
                 >
-                  Sign In
+                  Giriş Yap
                 </Button>
                 <Button
                   size="sm"
@@ -68,7 +68,7 @@ export function Navbar({ isAuthenticated, user }: NavbarProps) {
                   className="bg-gradient-to-r from-[#14b8a6] to-[#0891b2] hover:from-[#2dd4bf] hover:to-[#06b6d4] text-white"
                   data-testid="button-signup"
                 >
-                  Sign Up
+                  Kayıt Ol
                 </Button>
               </>
             )}

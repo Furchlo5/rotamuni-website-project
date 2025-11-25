@@ -1,8 +1,8 @@
-# YKS Study Tracking Assistant
+# RotamUni - Study Tracking Application
 
 ## Overview
 
-YKS Study Tracking Assistant is a web application designed for Turkish university entrance exam (YKS) students to track their study activities. The application provides four main features: a to-do list for managing tasks, a question counter for tracking solved questions across subjects, a timer for study sessions, and an analysis dashboard with visualizations of study progress. The application emphasizes a soft, pastel-themed aesthetic with mobile-first responsive design to create a friendly and approachable learning environment.
+RotamUni is a web application designed for Turkish university entrance exam students to track their study activities. The application provides four main features: a to-do list for managing tasks, a question counter for tracking solved questions across subjects, a timer (Zamanlayıcı) for study sessions, and an analysis dashboard with visualizations of study progress. The application features a turquoise theme (#14b8a6, teal/cyan gradients) with mobile-first responsive design and a seamless looping background video on the landing page.
 
 ## User Preferences
 
