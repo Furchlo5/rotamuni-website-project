@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Play, Pause, RotateCcw, Plus, X, Timer, Clock } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useTimer } from "@/contexts/TimerContext";
 import type { TimerSession } from "@shared/schema";
 
 const defaultSubjects = [
@@ -70,21 +70,34 @@ const pomodoroPresets = [
 ];
 
 export default function TimerPage() {
-  const [seconds, setSeconds] = useState(0);
-  const [isRunning, setIsRunning] = useState(false);
   const [customSubjects, setCustomSubjects] = useState<string[]>(getCustomSubjects());
   const [newSubjectName, setNewSubjectName] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
-  
-  const [pomodoroMinutes, setPomodoroMinutes] = useState(25);
-  const [pomodoroSeconds, setPomodoroSeconds] = useState(25 * 60);
-  const [pomodoroRunning, setPomodoroRunning] = useState(false);
-  const [pomodoroCompleted, setPomodoroCompleted] = useState(false);
   const [customPomodoroMinutes, setCustomPomodoroMinutes] = useState("");
-  const [pomodoroElapsed, setPomodoroElapsed] = useState(0);
+  
+  const {
+    seconds,
+    isRunning,
+    selectedSubject,
+    setSelectedSubject,
+    startTimer,
+    pauseTimer,
+    resetTimer,
+    saveTimer,
+    pomodoroSeconds,
+    pomodoroMinutes,
+    pomodoroRunning,
+    pomodoroCompleted,
+    pomodoroElapsed,
+    setPomodoroMinutes,
+    startPomodoro,
+    pausePomodoro,
+    resetPomodoro,
+    savePomodoro,
+    isSaving,
+  } = useTimer();
   
   const allSubjects = [...defaultSubjects, ...customSubjects];
-  const [selectedSubject, setSelectedSubject] = useState(allSubjects[0]);
   
   const { toast } = useToast();
   const today = new Date().toISOString().split("T")[0];
@@ -92,68 +105,9 @@ export default function TimerPage() {
   const {
     data: sessions = [],
     isLoading: loadingSessions,
-    isError: errorSessions,
   } = useQuery<TimerSession[]>({
     queryKey: ["/api/timer-sessions", today],
   });
-
-  const saveMutation = useMutation({
-    mutationFn: (duration: number) =>
-      apiRequest("POST", "/api/timer-sessions", {
-        duration,
-        subject: selectedSubject,
-        date: today,
-      }),
-    onSuccess: (_data, duration) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/timer-sessions", today] });
-      toast({
-        title: "Çalışma kaydedildi!",
-        description: `${formatTime(duration)} süre kaydedildi.`,
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Hata!",
-        description: "Çalışma kaydedilemedi. Lütfen tekrar deneyin.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  useEffect(() => {
-    let interval: number | undefined;
-    if (isRunning) {
-      interval = window.setInterval(() => {
-        setSeconds((s) => s + 1);
-      }, 1000);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isRunning]);
-
-  useEffect(() => {
-    let interval: number | undefined;
-    if (pomodoroRunning && pomodoroSeconds > 0) {
-      interval = window.setInterval(() => {
-        setPomodoroSeconds((s) => s - 1);
-        setPomodoroElapsed((e) => e + 1);
-      }, 1000);
-    } else if (pomodoroRunning && pomodoroSeconds === 0) {
-      setPomodoroRunning(false);
-      setPomodoroCompleted(true);
-      if (pomodoroElapsed > 0 && !saveMutation.isPending) {
-        saveMutation.mutate(pomodoroElapsed);
-      }
-      toast({
-        title: "Pomodoro tamamlandı!",
-        description: `${pomodoroMinutes} dakikalık çalışma süresi tamamlandı.`,
-      });
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [pomodoroRunning, pomodoroSeconds, pomodoroMinutes, pomodoroElapsed, saveMutation, toast]);
 
   const formatTime = (totalSeconds: number) => {
     const hours = Math.floor(totalSeconds / 3600);
@@ -170,44 +124,10 @@ export default function TimerPage() {
     return `${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const handleSave = () => {
-    if (seconds > 0 && !saveMutation.isPending) {
-      saveMutation.mutate(seconds);
-      setSeconds(0);
-      setIsRunning(false);
-    }
-  };
-
-  const handleReset = () => {
-    setSeconds(0);
-    setIsRunning(false);
-  };
-
-  const handlePomodoroReset = () => {
-    setPomodoroSeconds(pomodoroMinutes * 60);
-    setPomodoroRunning(false);
-    setPomodoroCompleted(false);
-    setPomodoroElapsed(0);
-  };
-
-  const handlePomodoroSave = () => {
-    if (pomodoroElapsed > 0 && !saveMutation.isPending) {
-      saveMutation.mutate(pomodoroElapsed);
-      handlePomodoroReset();
-    }
-  };
-
-  const handleSetPomodoroTime = (minutes: number) => {
-    setPomodoroMinutes(minutes);
-    setPomodoroSeconds(minutes * 60);
-    setPomodoroElapsed(0);
-    setPomodoroCompleted(false);
-  };
-
   const handleCustomPomodoro = () => {
     const mins = parseInt(customPomodoroMinutes);
     if (mins > 0 && mins <= 180) {
-      handleSetPomodoroTime(mins);
+      setPomodoroMinutes(mins);
       setCustomPomodoroMinutes("");
     } else {
       toast({
@@ -297,6 +217,12 @@ export default function TimerPage() {
                 )}
               </p>
             </div>
+            {(isRunning || pomodoroRunning) && (
+              <div className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-full">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                <span className="text-white text-sm font-medium">Çalışıyor</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -412,10 +338,12 @@ export default function TimerPage() {
               <TabsTrigger value="stopwatch" className="flex items-center gap-2">
                 <Clock className="w-4 h-4" />
                 Kronometre
+                {isRunning && <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />}
               </TabsTrigger>
               <TabsTrigger value="pomodoro" className="flex items-center gap-2">
                 <Timer className="w-4 h-4" />
                 Pomodoro
+                {pomodoroRunning && <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />}
               </TabsTrigger>
             </TabsList>
 
@@ -439,7 +367,7 @@ export default function TimerPage() {
               <div className="flex gap-3 justify-center flex-wrap">
                 <Button
                   size="lg"
-                  onClick={() => setIsRunning(!isRunning)}
+                  onClick={isRunning ? pauseTimer : startTimer}
                   className="w-32 bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white"
                   data-testid="button-toggle-timer"
                 >
@@ -457,8 +385,8 @@ export default function TimerPage() {
                 </Button>
                 <Button
                   size="lg"
-                  onClick={handleSave}
-                  disabled={seconds === 0 || isRunning || saveMutation.isPending}
+                  onClick={saveTimer}
+                  disabled={seconds === 0 || isRunning || isSaving}
                   className="bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white"
                   data-testid="button-save-timer"
                 >
@@ -467,7 +395,7 @@ export default function TimerPage() {
                 <Button
                   size="lg"
                   variant="outline"
-                  onClick={handleReset}
+                  onClick={resetTimer}
                   disabled={seconds === 0 || isRunning}
                   className="border-teal-500 text-teal-600 hover:bg-teal-50 dark:border-teal-400 dark:text-teal-400 dark:hover:bg-teal-950"
                   data-testid="button-reset-timer"
@@ -489,7 +417,7 @@ export default function TimerPage() {
                       key={preset.value}
                       variant={pomodoroMinutes === preset.value ? "default" : "outline"}
                       size="sm"
-                      onClick={() => handleSetPomodoroTime(preset.value)}
+                      onClick={() => setPomodoroMinutes(preset.value)}
                       disabled={pomodoroRunning}
                       className={pomodoroMinutes === preset.value 
                         ? "bg-gradient-to-r from-teal-500 to-cyan-600 text-white" 
@@ -561,7 +489,7 @@ export default function TimerPage() {
                       {formatPomodoroTime(pomodoroSeconds)}
                     </div>
                     <div className="text-xs text-muted-foreground mt-1">
-                      {pomodoroCompleted ? "Tamamlandı!" : pomodoroRunning ? "Çalışıyor..." : "Hazır"}
+                      {pomodoroCompleted ? "Tamamlandı! 🎉" : pomodoroRunning ? "Çalışıyor..." : "Hazır"}
                     </div>
                   </div>
                 </div>
@@ -577,7 +505,7 @@ export default function TimerPage() {
               <div className="flex gap-3 justify-center flex-wrap">
                 <Button
                   size="lg"
-                  onClick={() => setPomodoroRunning(!pomodoroRunning)}
+                  onClick={pomodoroRunning ? pausePomodoro : startPomodoro}
                   disabled={pomodoroCompleted}
                   className="w-32 bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white"
                   data-testid="button-toggle-pomodoro"
@@ -597,8 +525,8 @@ export default function TimerPage() {
                 {pomodoroElapsed > 0 && !pomodoroRunning && !pomodoroCompleted && (
                   <Button
                     size="lg"
-                    onClick={handlePomodoroSave}
-                    disabled={saveMutation.isPending}
+                    onClick={savePomodoro}
+                    disabled={isSaving}
                     className="bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white"
                     data-testid="button-save-pomodoro"
                   >
@@ -608,7 +536,7 @@ export default function TimerPage() {
                 <Button
                   size="lg"
                   variant="outline"
-                  onClick={handlePomodoroReset}
+                  onClick={resetPomodoro}
                   disabled={pomodoroRunning}
                   className="border-teal-500 text-teal-600 hover:bg-teal-50 dark:border-teal-400 dark:text-teal-400 dark:hover:bg-teal-950"
                   data-testid="button-reset-pomodoro"
@@ -621,50 +549,34 @@ export default function TimerPage() {
           </Tabs>
         </Card>
 
-        {loadingSessions ? (
-          <Card className="p-4 shadow-md">
+        <Card className="p-6 shadow-md">
+          <h3 className="font-semibold text-lg mb-4">Bugünkü Kayıtlar</h3>
+          {loadingSessions ? (
             <div className="space-y-2">
               {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="flex justify-between items-center p-2"
-                >
-                  <div className="h-4 w-24 bg-muted rounded animate-pulse" />
-                  <div className="h-4 w-16 bg-muted rounded animate-pulse" />
-                </div>
+                <div key={i} className="h-12 bg-muted rounded animate-pulse" />
               ))}
             </div>
-          </Card>
-        ) : errorSessions ? (
-          <Card className="p-6 shadow-md">
-            <div className="text-center">
-              <p className="text-destructive font-semibold mb-1">
-                Seanslar yüklenemedi
-              </p>
-              <p className="text-muted-foreground text-sm">
-                Lütfen sayfayı yenileyin.
-              </p>
-            </div>
-          </Card>
-        ) : sessions.length > 0 ? (
-          <Card className="p-4 shadow-md">
-            <h3 className="font-semibold mb-3">Bugünkü Seanslar</h3>
+          ) : sessions.length === 0 ? (
+            <p className="text-muted-foreground text-center py-4">
+              Henüz kayıt yok. Çalışmaya başla!
+            </p>
+          ) : (
             <div className="space-y-2">
-              {sessions.slice(-5).reverse().map((session, idx) => (
+              {sessions.map((session) => (
                 <div
                   key={session.id}
-                  className="flex justify-between items-center text-sm p-2 bg-muted/50 rounded"
-                  data-testid={`session-${idx}`}
+                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
                 >
                   <span className="font-medium">{session.subject}</span>
-                  <span className="text-muted-foreground">
+                  <span className="text-teal-600 dark:text-teal-400 font-mono">
                     {formatTime(session.duration)}
                   </span>
                 </div>
               ))}
             </div>
-          </Card>
-        ) : null}
+          )}
+        </Card>
       </div>
     </div>
   );
