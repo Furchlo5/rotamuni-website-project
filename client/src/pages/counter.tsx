@@ -1,19 +1,75 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { ArrowLeft, Check } from "lucide-react";
+import { ArrowLeft, Plus, X, Check } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { QuestionCount } from "@shared/schema";
+
+const defaultSubjects = [
+  "TYT Türkçe",
+  "TYT Tarih",
+  "TYT Coğrafya",
+  "TYT Felsefe",
+  "TYT Din Kültürü",
+  "TYT Matematik",
+  "TYT Geometri",
+  "TYT Fizik",
+  "TYT Kimya",
+  "TYT Biyoloji",
+  "AYT Edebiyat",
+  "AYT Tarih",
+  "AYT Coğrafya",
+  "AYT Felsefe",
+  "AYT Din Kültürü",
+  "AYT Matematik",
+  "AYT Fizik",
+  "AYT Kimya",
+  "AYT Biyoloji",
+];
+
+const CUSTOM_SUBJECTS_KEY = "rotamuni_custom_subjects";
+
+function getCustomSubjects(): string[] {
+  try {
+    const stored = localStorage.getItem(CUSTOM_SUBJECTS_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveCustomSubjects(subjects: string[]) {
+  localStorage.setItem(CUSTOM_SUBJECTS_KEY, JSON.stringify(subjects));
+}
 
 export default function CounterPage() {
   const today = new Date().toISOString().split("T")[0];
   const { toast } = useToast();
   const [inputValue, setInputValue] = useState("");
-  const [showKeypad, setShowKeypad] = useState(false);
+  const [customSubjects, setCustomSubjects] = useState<string[]>(getCustomSubjects());
+  const [newSubjectName, setNewSubjectName] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  
+  const allSubjects = [...defaultSubjects, ...customSubjects];
+  const [selectedSubject, setSelectedSubject] = useState(allSubjects[0]);
 
   const { data: counts = [], isLoading } = useQuery<QuestionCount[]>({
     queryKey: ["/api/question-counts", today],
@@ -29,217 +85,344 @@ export default function CounterPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/question-counts", today] });
       setInputValue("");
-      setShowKeypad(false);
       toast({
-        title: "Saved!",
-        description: "Question count updated successfully.",
+        title: "Kaydedildi!",
+        description: `${selectedSubject} için soru sayısı güncellendi.`,
       });
     },
     onError: () => {
       toast({
-        title: "Error!",
-        description: "Could not update question count.",
+        title: "Hata!",
+        description: "Soru sayısı kaydedilemedi. Lütfen tekrar deneyin.",
         variant: "destructive",
       });
     },
   });
 
-  const dailyTotalCount = counts.find((c) => c.subject === "Daily Total");
-  const totalQuestions = dailyTotalCount ? dailyTotalCount.count : 0;
+  const totalQuestions = counts.reduce((sum, c) => sum + c.count, 0);
+  
+  const currentSubjectCount = counts.find((c) => c.subject === selectedSubject)?.count || 0;
 
   const handleSave = () => {
     const count = parseInt(inputValue);
     if (!isNaN(count) && count >= 0) {
-      updateMutation.mutate({ subject: "Daily Total", count });
+      updateMutation.mutate({ subject: selectedSubject, count });
     } else {
       toast({
-        title: "Invalid input",
-        description: "Please enter a valid number.",
+        title: "Geçersiz değer",
+        description: "Lütfen geçerli bir sayı girin.",
         variant: "destructive",
       });
     }
   };
 
-  const handleKeypadClick = (value: string) => {
-    if (value === "clear") {
-      setInputValue("");
-    } else if (value === "backspace") {
-      setInputValue((prev) => prev.slice(0, -1));
-    } else {
-      setInputValue((prev) => prev + value);
+  const handleAddToCount = (amount: number) => {
+    const newCount = currentSubjectCount + amount;
+    if (newCount >= 0) {
+      updateMutation.mutate({ subject: selectedSubject, count: newCount });
     }
   };
 
+  const handleAddSubject = () => {
+    const trimmed = newSubjectName.trim();
+    if (!trimmed) {
+      toast({
+        title: "Hata!",
+        description: "Lütfen bir ders adı girin.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (allSubjects.includes(trimmed)) {
+      toast({
+        title: "Hata!",
+        description: "Bu ders zaten listede mevcut.",
+        variant: "destructive",
+      });
+      return;
+    }
+    const updated = [...customSubjects, trimmed];
+    setCustomSubjects(updated);
+    saveCustomSubjects(updated);
+    setSelectedSubject(trimmed);
+    setNewSubjectName("");
+    setDialogOpen(false);
+    toast({
+      title: "Ders eklendi!",
+      description: `"${trimmed}" ders listesine eklendi.`,
+    });
+  };
+
+  const handleRemoveCustomSubject = (subject: string) => {
+    const updated = customSubjects.filter((s) => s !== subject);
+    setCustomSubjects(updated);
+    saveCustomSubjects(updated);
+    if (selectedSubject === subject) {
+      setSelectedSubject(allSubjects[0]);
+    }
+    toast({
+      title: "Ders silindi",
+      description: `"${subject}" ders listesinden kaldırıldı.`,
+    });
+  };
+
+  const subjectCounts = counts.filter((c) => c.count > 0);
+
   return (
-    <div className="min-h-screen bg-[#0a1628] p-0">
-      {/* Header */}
-      <div className="bg-gradient-to-br from-[#1e3a5f] to-[#0f2744] px-4 py-6 shadow-xl">
-        <div className="max-w-md mx-auto">
-          <div className="flex items-center gap-3 mb-4">
+    <div className="min-h-screen bg-background p-4 md:p-6">
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-gradient-to-r from-teal-500 to-cyan-600 rounded-2xl p-6 mb-6 shadow-lg">
+          <div className="flex items-center gap-3">
             <Link href="/">
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:bg-white/10"
+                className="text-white hover:bg-white/20"
                 data-testid="button-back"
               >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
             </Link>
             <div className="flex-1">
-              <h1 className="text-xl font-bold text-white" data-testid="text-page-title">
-                Daily Tracker
+              <h1 className="text-2xl md:text-3xl font-bold text-white" data-testid="text-page-title">
+                Soru Sayısı Takibi
               </h1>
-            </div>
-          </div>
-          
-          {/* Stats Summary */}
-          <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-            <div className="text-center">
-              <div className="text-sm text-white/60 mb-1">Today's Total</div>
-
-              {/* burada className rengi turkuaz yapıldı... */}
-              <div className="text-4xl font-bold text-[#14b8a6]" data-testid="text-total-count">
-                {isLoading ? "..." : totalQuestions}
-              </div>
-              <div className="text-xs text-white/50 mt-1">questions solved</div>
+              <p className="text-white/90 text-sm mt-1">
+                {isLoading ? (
+                  <span className="inline-block w-32 h-4 bg-white/20 rounded animate-pulse" />
+                ) : (
+                  `Bugün toplam: ${totalQuestions} soru`
+                )}
+              </p>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="max-w-md mx-auto px-4 py-6">
-        <Card className="bg-[#152238] border-[#1e3a5f] shadow-2xl overflow-hidden">
-          <div className="p-6">
-            <h2 className="text-lg font-semibold text-white mb-2">
-              Daily Question Tracker
-            </h2>
-            <p className="text-sm text-white/50 mb-6">
-              Enter the number of questions you've solved today
-            </p>
-            
-            {/* Input Field - burada focus:border ve focus:ring turkuaz yapıldı */}
-            <div className="mb-6">
+        <Card className="p-6 md:p-8 mb-6 shadow-md">
+          <div className="mb-6">
+            <label className="text-sm font-medium text-muted-foreground mb-2 block">
+              Ders Seçin
+            </label>
+            <div className="flex gap-2">
+              <Select value={selectedSubject} onValueChange={setSelectedSubject}>
+                <SelectTrigger className="flex-1" data-testid="select-subject">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <div className="text-xs font-semibold text-muted-foreground px-2 py-1.5">TYT Dersleri</div>
+                  {defaultSubjects.filter(s => s.startsWith("TYT")).map((subject) => (
+                    <SelectItem key={subject} value={subject}>
+                      {subject}
+                    </SelectItem>
+                  ))}
+                  <div className="text-xs font-semibold text-muted-foreground px-2 py-1.5 mt-2">AYT Dersleri</div>
+                  {defaultSubjects.filter(s => s.startsWith("AYT")).map((subject) => (
+                    <SelectItem key={subject} value={subject}>
+                      {subject}
+                    </SelectItem>
+                  ))}
+                  {customSubjects.length > 0 && (
+                    <>
+                      <div className="text-xs font-semibold text-muted-foreground px-2 py-1.5 mt-2">Özel Dersler</div>
+                      {customSubjects.map((subject) => (
+                        <SelectItem key={subject} value={subject}>
+                          {subject}
+                        </SelectItem>
+                      ))}
+                    </>
+                  )}
+                </SelectContent>
+              </Select>
+              
+              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="border-teal-500 text-teal-600 hover:bg-teal-50 dark:border-teal-400 dark:text-teal-400 dark:hover:bg-teal-950"
+                    data-testid="button-add-subject"
+                  >
+                    <Plus className="w-5 h-5" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Yeni Ders Ekle</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 pt-4">
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                        Ders Adı
+                      </label>
+                      <Input
+                        placeholder="Örn: İngilizce, Almanca..."
+                        value={newSubjectName}
+                        onChange={(e) => setNewSubjectName(e.target.value)}
+                        onKeyPress={(e) => e.key === "Enter" && handleAddSubject()}
+                        data-testid="input-new-subject"
+                      />
+                    </div>
+                    <Button
+                      onClick={handleAddSubject}
+                      className="w-full bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white"
+                      data-testid="button-confirm-add-subject"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Ekle
+                    </Button>
+                    
+                    {customSubjects.length > 0 && (
+                      <div className="pt-4 border-t">
+                        <h4 className="text-sm font-medium text-muted-foreground mb-2">
+                          Eklenen Dersler
+                        </h4>
+                        <div className="space-y-2">
+                          {customSubjects.map((subject) => (
+                            <div
+                              key={subject}
+                              className="flex items-center justify-between p-2 bg-muted/50 rounded"
+                            >
+                              <span className="text-sm">{subject}</span>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleRemoveCustomSubject(subject)}
+                                className="h-7 w-7 text-destructive hover:bg-destructive/10"
+                                data-testid={`button-remove-subject-${subject}`}
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
+
+          <div className="text-center mb-6">
+            <div className="text-sm text-muted-foreground mb-2">
+              {selectedSubject} için bugün
+            </div>
+            <div
+              className="text-6xl md:text-7xl font-bold text-foreground mb-2 font-mono"
+              data-testid="text-subject-count"
+            >
+              {isLoading ? "..." : currentSubjectCount}
+            </div>
+            <div className="text-sm text-muted-foreground">soru çözüldü</div>
+          </div>
+
+          <div className="flex gap-2 justify-center mb-6 flex-wrap">
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => handleAddToCount(1)}
+              disabled={updateMutation.isPending}
+              className="border-teal-500 text-teal-600 hover:bg-teal-50 dark:border-teal-400 dark:text-teal-400 dark:hover:bg-teal-950 text-lg font-semibold"
+            >
+              +1
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => handleAddToCount(5)}
+              disabled={updateMutation.isPending}
+              className="border-teal-500 text-teal-600 hover:bg-teal-50 dark:border-teal-400 dark:text-teal-400 dark:hover:bg-teal-950 text-lg font-semibold"
+            >
+              +5
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => handleAddToCount(10)}
+              disabled={updateMutation.isPending}
+              className="border-teal-500 text-teal-600 hover:bg-teal-50 dark:border-teal-400 dark:text-teal-400 dark:hover:bg-teal-950 text-lg font-semibold"
+            >
+              +10
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => handleAddToCount(20)}
+              disabled={updateMutation.isPending}
+              className="border-teal-500 text-teal-600 hover:bg-teal-50 dark:border-teal-400 dark:text-teal-400 dark:hover:bg-teal-950 text-lg font-semibold"
+            >
+              +20
+            </Button>
+          </div>
+
+          <div className="border-t pt-6">
+            <label className="text-sm font-medium text-muted-foreground mb-2 block">
+              Veya manuel girin
+            </label>
+            <div className="flex gap-2">
               <Input
-                type="text"
+                type="number"
                 inputMode="numeric"
-                pattern="[0-9]*"
-                placeholder="Enter count..."
+                placeholder="Soru sayısı..."
                 value={inputValue}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/[^0-9]/g, "");
-                  setInputValue(value);
-                }}
-                onFocus={() => setShowKeypad(true)}
-                className="h-16 text-center text-3xl font-bold bg-[#0a1628] border-[#2d4a6f] text-white placeholder:text-white/30 focus:border-[#14b8a6] focus:ring-[#14b8a6]/20"
+                onChange={(e) => setInputValue(e.target.value)}
+                className="flex-1"
+                min={0}
                 data-testid="input-question-count"
               />
-            </div>
-
-            {/* Save Button - Burada from, to, hover:from, hover:to degistirildi */}
-            <Button
-              onClick={handleSave}
-              disabled={!inputValue || updateMutation.isPending}
-              className="w-full h-14 bg-gradient-to-r from-[#14b8a6] to-[#0891b2] hover:from-[#2dd4bf] hover:to-[#06b6d4] text-white font-semibold text-lg shadow-lg shadow-teal-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
-              data-testid="button-save"
-            >
-              <Check className="w-5 h-5 mr-2" />
-              {updateMutation.isPending ? "Saving..." : "Save Count"}
-            </Button>
-
-            {/* Quick Stats */}
-            <div className="mt-6 pt-6 border-t border-white/10">
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-white/60">Last updated</span>
-                <span className="text-white/80 font-medium">Today</span>
-              </div>
+              <Button
+                onClick={handleSave}
+                disabled={!inputValue || updateMutation.isPending}
+                className="bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white"
+                data-testid="button-save"
+              >
+                <Check className="w-5 h-5 mr-2" />
+                Kaydet
+              </Button>
             </div>
           </div>
         </Card>
 
-        {/* Instructions */}
-        <div className="mt-6 text-center">
-          <p className="text-xs text-white/40">
-            Tap the input field to enter your daily question count
-          </p>
-        </div>
-      </div>
-
-      {/* Numeric Keypad Overlay */}
-      {showKeypad && (
-        <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end animate-in fade-in duration-200"
-          onClick={() => setShowKeypad(false)}
-          data-testid="keypad-overlay"
-        >
-          <div 
-            className="w-full bg-[#152238] border-t border-[#2d4a6f] p-4 animate-in slide-in-from-bottom duration-300"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="max-w-md mx-auto">
-              {/* Keypad Header */}
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-white/60 text-sm">Enter count</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowKeypad(false)}
-                  className="text-white/60 hover:text-white"
+        {isLoading ? (
+          <Card className="p-4 shadow-md">
+            <div className="space-y-2">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="flex justify-between items-center p-2"
                 >
-                  Done
-                </Button>
-              </div>
-
-              {/* Display */}
-              <div className="bg-[#0a1628] rounded-xl p-4 mb-4 border border-[#2d4a6f]">
-                <div className="text-right text-3xl font-bold text-white min-h-[48px] flex items-center justify-end">
-                  {inputValue || "0"}
+                  <div className="h-4 w-24 bg-muted rounded animate-pulse" />
+                  <div className="h-4 w-16 bg-muted rounded animate-pulse" />
                 </div>
-              </div>
-
-              {/* Number Grid */}
-              <div className="grid grid-cols-3 gap-3 mb-3">
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-                  <button
-                    key={num}
-                    onClick={() => handleKeypadClick(num.toString())}
-                    className="h-14 bg-[#1e3a5f] hover:bg-[#2d4a6f] active:bg-[#3d5a7f] text-white text-xl font-semibold rounded-xl transition-colors"
-                    data-testid={`keypad-${num}`}
-                  >
-                    {num}
-                  </button>
-                ))}
-              </div>
-
-              {/* Bottom Row */}
-              <div className="grid grid-cols-3 gap-3">
-                <button
-                  onClick={() => handleKeypadClick("clear")}
-                  className="h-14 bg-[#1e3a5f] hover:bg-[#2d4a6f] active:bg-[#3d5a7f] text-white/70 text-sm font-medium rounded-xl transition-colors"
-                  data-testid="keypad-clear"
-                >
-                  Clear
-                </button>
-                <button
-                  onClick={() => handleKeypadClick("0")}
-                  className="h-14 bg-[#1e3a5f] hover:bg-[#2d4a6f] active:bg-[#3d5a7f] text-white text-xl font-semibold rounded-xl transition-colors"
-                  data-testid="keypad-0"
-                >
-                  0
-                </button>
-                <button
-                  onClick={() => handleKeypadClick("backspace")}
-                  className="h-14 bg-[#1e3a5f] hover:bg-[#2d4a6f] active:bg-[#3d5a7f] text-white/70 text-sm font-medium rounded-xl transition-colors"
-                  data-testid="keypad-backspace"
-                >
-                  ⌫
-                </button>
-              </div>
+              ))}
             </div>
-          </div>
-        </div>
-      )}
+          </Card>
+        ) : subjectCounts.length > 0 ? (
+          <Card className="p-4 shadow-md">
+            <h3 className="font-semibold mb-3">Bugünkü Soru Dağılımı</h3>
+            <div className="space-y-2">
+              {subjectCounts.map((count) => (
+                <div
+                  key={count.id}
+                  className="flex justify-between items-center text-sm p-2 bg-muted/50 rounded"
+                  data-testid={`count-${count.subject}`}
+                >
+                  <span className="font-medium">{count.subject}</span>
+                  <span className="text-muted-foreground font-mono">
+                    {count.count} soru
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 pt-4 border-t flex justify-between items-center font-semibold">
+              <span>Toplam</span>
+              <span className="text-teal-600 dark:text-teal-400 font-mono">
+                {totalQuestions} soru
+              </span>
+            </div>
+          </Card>
+        ) : null}
+      </div>
     </div>
   );
 }

@@ -10,8 +10,8 @@ const features = [
     icon: ClipboardList,
   },
   {
-    title: "Soru Sayacı",
-    description: "Çözdüğünüz soruları günlük olarak kaydedin",
+    title: "Soru Sayısı Takibi",
+    description: "Ders ders çözdüğünüz soruları kaydedin",
     path: "/counter",
     icon: Calculator,
   },
