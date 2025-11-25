@@ -171,12 +171,12 @@ export default function AnalysisPage() {
 
           <Card className="p-6 shadow-md">
             <div className="flex items-start gap-3">
-              <div className="p-3 bg-cyan-500/20 rounded-lg">
-                <Clock className="w-6 h-6 text-cyan-400" />
+              <div className="p-3 bg-teal-500/20 rounded-lg">
+                <Clock className="w-6 h-6 text-teal-400" />
               </div>
               <div>
                 <div className="text-sm text-muted-foreground">Çalışma Süresi</div>
-                <div className="text-2xl font-bold text-cyan-400" data-testid="text-total-time">
+                <div className="text-2xl font-bold text-teal-400" data-testid="text-total-time">
                   {formatTime(totalTime)}
                 </div>
               </div>
@@ -185,12 +185,12 @@ export default function AnalysisPage() {
 
           <Card className="p-6 shadow-md">
             <div className="flex items-start gap-3">
-              <div className="p-3 bg-cyan-500/20 rounded-lg">
-                <TrendingUp className="w-6 h-6 text-cyan-400" />
+              <div className="p-3 bg-teal-500/20 rounded-lg">
+                <TrendingUp className="w-6 h-6 text-teal-400" />
               </div>
               <div>
                 <div className="text-sm text-muted-foreground">Ders Sayısı</div>
-                <div className="text-2xl font-bold text-cyan-400" data-testid="text-subject-count">
+                <div className="text-2xl font-bold text-teal-400" data-testid="text-subject-count">
                   {new Set([
                     ...questionCounts.filter((c) => c.count > 0).map((c) => c.subject),
                     ...timerSessions.map((s) => s.subject),
