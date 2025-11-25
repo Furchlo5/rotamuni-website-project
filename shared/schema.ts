@@ -48,6 +48,18 @@ export const timerSessions = pgTable("timer_sessions", {
   date: text("date").notNull(),
 });
 
+export const netResults = pgTable("net_results", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  examType: text("exam_type").notNull(),
+  aytField: text("ayt_field"),
+  date: text("date").notNull(),
+  publisher: text("publisher").notNull(),
+  totalNet: text("total_net").notNull(),
+  subjectScores: jsonb("subject_scores").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const upsertUserSchema = createInsertSchema(users).pick({
   id: true,
   email: true,
@@ -70,6 +82,11 @@ export const insertTimerSessionSchema = createInsertSchema(timerSessions).omit({
   id: true,
 });
 
+export const insertNetResultSchema = createInsertSchema(netResults).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
 
@@ -81,3 +98,6 @@ export type InsertQuestionCount = z.infer<typeof insertQuestionCountSchema>;
 
 export type TimerSession = typeof timerSessions.$inferSelect;
 export type InsertTimerSession = z.infer<typeof insertTimerSessionSchema>;
+
+export type NetResult = typeof netResults.$inferSelect;
+export type InsertNetResult = z.infer<typeof insertNetResultSchema>;
