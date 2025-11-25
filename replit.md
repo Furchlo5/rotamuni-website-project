@@ -51,9 +51,12 @@ Preferred communication style: Simple, everyday language.
   - `POST /api/question-counts` - Upsert question count
 - **Timer Sessions**:
   - `GET /api/timer-sessions/:date` - Fetch timer sessions by date
-  - `POST /api/timer-sessions` - Create timer session
+  - `POST /api/timer-sessions` - Create timer session (requires auth, auto-assigns userId)
 - **Analytics**:
   - `GET /api/stats?startDate=X&endDate=Y` - Fetch aggregated statistics for date range (weekly/monthly analytics)
+- **Streak** (all require authentication):
+  - `GET /api/streak` - Get current streak count for authenticated user
+  - `GET /api/monthly-study/:year/:month` - Get daily study hours for a specific month
 
 **Validation**: Zod schemas (defined in shared directory) validate all incoming API requests, with automatic error responses for validation failures.
 
@@ -179,6 +182,28 @@ Preferred communication style: Simple, everyday language.
   - Pomodoro technique supporters can use countdown timer
   - Free-form studiers can use the stopwatch
   - All study time is tracked and aggregated for analytics
+
+### Streak Feature
+- **Date**: November 25, 2025
+- **Change**: Added streak tracking system with flame icon in navbar and dedicated streak page
+- **Implementation**:
+  - **Navbar Enhancement**:
+    - Flame icon with streak count displayed next to RotamUni logo (only when authenticated)
+    - Clicking the flame navigates to the streak page
+    - Orange gradient background for visual appeal
+  - **Streak Page** (`/streak`):
+    - Monthly calendar view showing study days
+    - Month/year selector for viewing historical data
+    - Checkmark on days when user studied
+    - Click on a day to see detailed study hours
+    - Summary statistics: total study days and hours per month
+  - **Backend**:
+    - Added `userId` column to `timer_sessions` table for per-user tracking
+    - New endpoints: `GET /api/streak` and `GET /api/monthly-study/:year/:month`
+    - Both endpoints require authentication and filter by user ID
+    - Streak calculation: counts consecutive days with study sessions from today backwards
+  - **Dashboard**: Added "Streak" feature card with flame icon
+- **Security**: All streak data is per-user, requiring authentication to access
 
 ### Google Fonts Integration
 - **Poppins**: Primary font family loaded via Google Fonts CDN

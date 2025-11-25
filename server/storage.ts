@@ -10,6 +10,11 @@ import {
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 
+export interface DailyStudyData {
+  date: string;
+  totalSeconds: number;
+}
+
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
@@ -27,6 +32,9 @@ export interface IStorage {
   getTimerSessionsByDate(date: string): Promise<TimerSession[]>;
   getTimerSessionsByDateRange(startDate: string, endDate: string): Promise<TimerSession[]>;
   createTimerSession(session: InsertTimerSession): Promise<TimerSession>;
+
+  getStreak(userId: string): Promise<number>;
+  getMonthlyStudyData(userId: string, year: number, month: number): Promise<DailyStudyData[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -153,15 +161,59 @@ export class MemStorage implements IStorage {
   }
 
   async createTimerSession(
-    insertSession: InsertTimerSession,
+    insertSession: InsertTimerSession & { userId?: string },
   ): Promise<TimerSession> {
     const id = randomUUID();
     const session: TimerSession = {
-      ...insertSession,
       id,
+      userId: insertSession.userId ?? null,
+      duration: insertSession.duration,
+      subject: insertSession.subject,
+      date: insertSession.date,
     };
     this.timerSessions.set(id, session);
     return session;
+  }
+
+  async getStreak(userId: string): Promise<number> {
+    const sessions = Array.from(this.timerSessions.values()).filter(s => s.userId === userId);
+    const studyDates = new Set(sessions.map(s => s.date));
+    
+    let streak = 0;
+    const today = new Date();
+    
+    for (let i = 0; i < 365; i++) {
+      const checkDate = new Date(today);
+      checkDate.setDate(today.getDate() - i);
+      const dateStr = checkDate.toISOString().split('T')[0];
+      
+      if (studyDates.has(dateStr)) {
+        streak++;
+      } else if (i > 0) {
+        break;
+      }
+    }
+    
+    return streak;
+  }
+
+  async getMonthlyStudyData(userId: string, year: number, month: number): Promise<DailyStudyData[]> {
+    const sessions = Array.from(this.timerSessions.values()).filter(s => s.userId === userId);
+    const monthStr = `${year}-${String(month).padStart(2, '0')}`;
+    
+    const dailyData = new Map<string, number>();
+    
+    sessions.forEach(session => {
+      if (session.date.startsWith(monthStr)) {
+        const current = dailyData.get(session.date) || 0;
+        dailyData.set(session.date, current + session.duration);
+      }
+    });
+    
+    return Array.from(dailyData.entries()).map(([date, totalSeconds]) => ({
+      date,
+      totalSeconds,
+    }));
   }
 }
 
@@ -312,6 +364,61 @@ export class DbStorage implements IStorage {
       .values(insertSession)
       .returning();
     return result[0];
+  }
+
+  async getStreak(userId: string): Promise<number> {
+    const result = await this.db
+      .select({
+        date: schema.timerSessions.date,
+      })
+      .from(schema.timerSessions)
+      .where(eq(schema.timerSessions.userId, userId))
+      .groupBy(schema.timerSessions.date)
+      .orderBy(sql`${schema.timerSessions.date} DESC`);
+    
+    const studyDates = new Set(result.map(r => r.date));
+    
+    let streak = 0;
+    const today = new Date();
+    
+    for (let i = 0; i < 365; i++) {
+      const checkDate = new Date(today);
+      checkDate.setDate(today.getDate() - i);
+      const dateStr = checkDate.toISOString().split('T')[0];
+      
+      if (studyDates.has(dateStr)) {
+        streak++;
+      } else if (i > 0) {
+        break;
+      }
+    }
+    
+    return streak;
+  }
+
+  async getMonthlyStudyData(userId: string, year: number, month: number): Promise<DailyStudyData[]> {
+    const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
+    const endDate = `${year}-${String(month).padStart(2, '0')}-31`;
+    
+    const result = await this.db
+      .select({
+        date: schema.timerSessions.date,
+        totalSeconds: sql<number>`SUM(${schema.timerSessions.duration})`,
+      })
+      .from(schema.timerSessions)
+      .where(
+        and(
+          eq(schema.timerSessions.userId, userId),
+          sql`${schema.timerSessions.date} >= ${startDate}`,
+          sql`${schema.timerSessions.date} <= ${endDate}`,
+        ),
+      )
+      .groupBy(schema.timerSessions.date);
+    
+    return result.map(r => ({
+      date: r.date,
+      totalSeconds: Number(r.totalSeconds),
+    }));
   }
 }
 

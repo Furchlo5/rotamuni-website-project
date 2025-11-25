@@ -42,6 +42,7 @@ export const questionCounts = pgTable("question_counts", {
 
 export const timerSessions = pgTable("timer_sessions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id"),
   duration: integer("duration").notNull(),
   subject: text("subject").notNull(),
   date: text("date").notNull(),

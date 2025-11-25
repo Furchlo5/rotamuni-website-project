@@ -119,10 +119,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/timer-sessions", async (req, res) => {
+  app.post("/api/timer-sessions", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
       const data = insertTimerSessionSchema.parse(req.body);
-      const session = await storage.createTimerSession(data);
+      const session = await storage.createTimerSession({ ...data, userId });
       res.json(session);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -150,6 +154,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ questionCounts, timerSessions });
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch statistics" });
+    }
+  });
+
+  app.get("/api/streak", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      const streak = await storage.getStreak(userId);
+      res.json({ streak });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch streak" });
+    }
+  });
+
+  app.get("/api/monthly-study/:year/:month", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      
+      const year = parseInt(req.params.year);
+      const month = parseInt(req.params.month);
+      
+      if (isNaN(year) || isNaN(month) || month < 1 || month > 12) {
+        res.status(400).json({ error: "Invalid year or month" });
+        return;
+      }
+      
+      const data = await storage.getMonthlyStudyData(userId, year, month);
+      res.json(data);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch monthly study data" });
     }
   });
 
