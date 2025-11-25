@@ -161,5 +161,24 @@ Preferred communication style: Simple, everyday language.
 - **Testing**: End-to-end test confirms complete auth flow (landing → login → dashboard → logout → landing)
 - **Assets**: User logo (logo_son_1764010143596.png) imported via @assets alias in Navbar
 
+### Pomodoro Timer Feature
+- **Date**: November 25, 2025
+- **Change**: Added Pomodoro timer option to the Timer (Çalışılan Süre) page
+- **Implementation**:
+  - Added tabs to switch between "Kronometre" (stopwatch) and "Pomodoro" timer modes
+  - Pomodoro timer features:
+    - Preset durations: 25, 30, 45, 50, 60 minutes
+    - Custom duration input (1-180 minutes)
+    - Circular progress indicator with gradient animation
+    - Auto-save when Pomodoro completes
+    - Manual save option if paused before completion
+  - Both timer modes save to the same `timer_sessions` table
+  - All Pomodoro sessions appear in the Analysis page statistics
+- **User Experience**:
+  - Users can choose their preferred study method
+  - Pomodoro technique supporters can use countdown timer
+  - Free-form studiers can use the stopwatch
+  - All study time is tracked and aggregated for analytics
+
 ### Google Fonts Integration
 - **Poppins**: Primary font family loaded via Google Fonts CDN
