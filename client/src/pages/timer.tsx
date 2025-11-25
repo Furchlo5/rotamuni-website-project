@@ -452,27 +452,27 @@ export default function TimerPage() {
 
               <div className="text-center mb-8">
                 <div className="relative inline-block">
-                  <svg className="w-48 h-48 md:w-56 md:h-56 transform -rotate-90">
+                  <svg className="w-48 h-48 md:w-56 md:h-56 transform -rotate-90" viewBox="0 0 200 200">
                     <circle
-                      cx="50%"
-                      cy="50%"
-                      r="45%"
+                      cx="100"
+                      cy="100"
+                      r="90"
                       stroke="currentColor"
-                      strokeWidth="8"
+                      strokeWidth="12"
                       fill="none"
                       className="text-muted/30"
                     />
                     <circle
-                      cx="50%"
-                      cy="50%"
-                      r="45%"
+                      cx="100"
+                      cy="100"
+                      r="90"
                       stroke="url(#pomodoroGradient)"
-                      strokeWidth="8"
+                      strokeWidth="12"
                       fill="none"
                       strokeLinecap="round"
-                      strokeDasharray={`${2 * Math.PI * 45} ${2 * Math.PI * 45}`}
-                      strokeDashoffset={`${2 * Math.PI * 45 * (1 - progress / 100)}`}
-                      className="transition-all duration-1000"
+                      strokeDasharray={2 * Math.PI * 90}
+                      strokeDashoffset={2 * Math.PI * 90 * (1 - progress / 100)}
+                      className="transition-all duration-500"
                     />
                     <defs>
                       <linearGradient id="pomodoroGradient" x1="0%" y1="0%" x2="100%" y2="0%">
