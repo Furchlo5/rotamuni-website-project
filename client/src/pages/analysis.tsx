@@ -19,16 +19,37 @@ import {
 } from "recharts";
 import type { QuestionCount, TimerSession } from "@shared/schema";
 
-const COLORS = [
+const SUBJECT_COLORS: Record<string, string> = {
+  "Matematik": "#14b8a6",
+  "Fizik": "#f59e0b",
+  "Kimya": "#8b5cf6",
+  "Biyoloji": "#22c55e",
+  "Türkçe": "#ef4444",
+  "Tarih": "#3b82f6",
+  "Coğrafya": "#ec4899",
+  "Felsefe": "#f97316",
+  "Din Kültürü": "#06b6d4",
+  "İngilizce": "#6366f1",
+  "Edebiyat": "#a855f7",
+  "Geometri": "#10b981",
+};
+
+const DEFAULT_COLORS = [
   "#14b8a6",
-  "#0891b2",
+  "#f59e0b",
+  "#8b5cf6",
+  "#22c55e",
+  "#ef4444",
+  "#3b82f6",
+  "#ec4899",
+  "#f97316",
   "#06b6d4",
-  "#22d3ee",
-  "#2dd4bf",
-  "#5eead4",
-  "#99f6e4",
-  "#0d9488",
+  "#6366f1",
 ];
+
+const getSubjectColor = (subject: string, index: number): string => {
+  return SUBJECT_COLORS[subject] || DEFAULT_COLORS[index % DEFAULT_COLORS.length];
+};
 
 type Period = "daily" | "weekly" | "monthly";
 
@@ -236,51 +257,87 @@ export default function AnalysisPage() {
                 <h3 className="font-semibold text-lg mb-4">
                   Ders Bazında Soru Dağılımı
                 </h3>
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={questionData}>
-                    <CartesianGrid strokeDasharray="3 3" />
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
                     <XAxis
                       dataKey="subject"
-                      tick={{ fontSize: 12 }}
+                      tick={{ fontSize: 11 }}
                       angle={-45}
                       textAnchor="end"
-                      height={80}
+                      height={70}
                     />
                     <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="count" fill="hsl(var(--chart-1))" radius={[8, 8, 0, 0]} />
+                    <Tooltip formatter={(value: number) => [`${value} soru`, 'Sayı']} />
+                    <Bar dataKey="count" radius={[8, 8, 0, 0]}>
+                      {questionData.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={getSubjectColor(entry.subject, index)}
+                        />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
+                <div className="mt-4 flex flex-wrap justify-center gap-3">
+                  {questionData.map((entry, index) => (
+                    <div key={entry.subject} className="flex items-center gap-2">
+                      <div 
+                        className="w-3 h-3 rounded-full" 
+                        style={{ backgroundColor: getSubjectColor(entry.subject, index) }}
+                      />
+                      <span className="text-sm text-muted-foreground">
+                        {entry.subject}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </Card>
             )}
 
             {timeData.length > 0 && (
               <Card className="p-6 shadow-md">
                 <h3 className="font-semibold text-lg mb-4">
-                  Ders Bazında Çalışma Süresi (dk)
+                  Ders Bazında Çalışma Süresi
                 </h3>
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={250}>
                   <PieChart>
                     <Pie
                       data={timeData}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ subject, duration }) => `${subject}: ${duration}dk`}
-                      outerRadius={80}
+                      outerRadius={90}
+                      innerRadius={50}
                       fill="#8884d8"
                       dataKey="duration"
+                      paddingAngle={2}
                     >
                       {timeData.map((entry, index) => (
                         <Cell
                           key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
+                          fill={getSubjectColor(entry.subject, index)}
                         />
                       ))}
                     </Pie>
-                    <Tooltip />
+                    <Tooltip 
+                      formatter={(value: number) => [`${value} dakika`, 'Süre']}
+                    />
                   </PieChart>
                 </ResponsiveContainer>
+                <div className="mt-4 flex flex-wrap justify-center gap-3">
+                  {timeData.map((entry, index) => (
+                    <div key={entry.subject} className="flex items-center gap-2">
+                      <div 
+                        className="w-3 h-3 rounded-full" 
+                        style={{ backgroundColor: getSubjectColor(entry.subject, index) }}
+                      />
+                      <span className="text-sm text-muted-foreground">
+                        {entry.subject} ({entry.duration}dk)
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </Card>
             )}
           </div>
