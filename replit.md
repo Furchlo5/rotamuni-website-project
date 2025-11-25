@@ -205,5 +205,37 @@ Preferred communication style: Simple, everyday language.
   - **Dashboard**: Added "Streak" feature card with flame icon
 - **Security**: All streak data is per-user, requiring authentication to access
 
+### Net Tracking Feature (Deneme Takibi)
+- **Date**: November 25, 2025
+- **Change**: Added comprehensive exam result tracking for TYT and AYT practice exams
+- **Implementation**:
+  - **Database Schema**:
+    - New `net_results` table with fields: userId, examType, aytField (nullable), date, publisher, totalNet, subjectScores (JSONB), createdAt
+    - Stores per-subject scores including correct, wrong, and calculated net values
+  - **Net Tracking Page** (`/net-tracking`):
+    - Exam type selector (TYT/AYT)
+    - AYT field selector (Sözel, Eşit Ağırlık, Sayısal) when AYT is selected
+    - Subject-specific input for correct/wrong answers with automatic blank calculation
+    - Real-time net calculation using YKS formula: correct - (wrong × 0.25)
+    - Date picker and publisher name input for exam identification
+    - Save validation requires exam type, field (for AYT), and publisher name
+  - **Analysis Page Enhancement**:
+    - Two new line charts: TYT Net Gelişimi and AYT Net Gelişimi
+    - Charts display exam results over time with clickable data points
+    - Clicking a point opens a detailed popup showing:
+      - Exam date and publisher
+      - Total net score
+      - Per-subject breakdown (correct, wrong, net)
+    - Data normalization ensures consistent numeric handling
+  - **API Endpoints** (all require authentication):
+    - `GET /api/net-results` - Fetch all exam results for authenticated user
+    - `POST /api/net-results` - Save new exam result
+    - `DELETE /api/net-results/:id` - Delete exam result
+- **User Experience**:
+  - Track progress across multiple practice exams
+  - Visualize improvement trends over time
+  - Compare performance across different publishers
+  - Detailed breakdown helps identify weak subjects
+
 ### Google Fonts Integration
 - **Poppins**: Primary font family loaded via Google Fonts CDN
