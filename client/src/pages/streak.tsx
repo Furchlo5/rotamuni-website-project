@@ -123,15 +123,16 @@ export default function StreakPage() {
 
         <Card className="bg-gradient-to-r from-orange-500/20 to-red-500/20 border-orange-500/30">
           <CardContent className="p-6">
-            <div className="flex items-center justify-center gap-4">
-              <Flame className="h-12 w-12 text-orange-500" />
-              <div className="text-center">
-                <div className="text-5xl font-bold text-orange-400">
-                  {streakData?.streak ?? 0}
+            <div className="flex flex-col items-center justify-center">
+              <div className="relative">
+                <Flame className="h-32 w-32 text-orange-500 drop-shadow-[0_0_15px_rgba(249,115,22,0.5)]" />
+                <div className="absolute inset-0 flex items-center justify-center pt-4">
+                  <span className="text-4xl font-bold text-white drop-shadow-lg">
+                    {streakData?.streak ?? 0}
+                  </span>
                 </div>
-                <div className="text-orange-300 text-lg">Günlük Seri</div>
               </div>
-              <Flame className="h-12 w-12 text-orange-500" />
+              <div className="text-orange-300 text-lg mt-2">Günlük Seri</div>
             </div>
             <p className="text-center text-orange-200/70 mt-4 text-sm">
               Her gün çalışarak serini sürdür!
