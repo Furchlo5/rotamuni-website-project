@@ -27,22 +27,24 @@ export const users = pgTable("users", {
 
 export const todos = pgTable("todos", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
   title: text("title").notNull(),
   completed: boolean("completed").notNull().default(false),
 });
 
 export const questionCounts = pgTable("question_counts", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
   subject: text("subject").notNull(),
   count: integer("count").notNull().default(0),
   date: text("date").notNull(),
 }, (table) => ({
-  subjectDateUnique: unique().on(table.subject, table.date),
+  userSubjectDateUnique: unique().on(table.userId, table.subject, table.date),
 }));
 
 export const timerSessions = pgTable("timer_sessions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id"),
+  userId: varchar("user_id").notNull(),
   duration: integer("duration").notNull(),
   subject: text("subject").notNull(),
   date: text("date").notNull(),

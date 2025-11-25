@@ -21,18 +21,18 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
 
-  getTodos(): Promise<Todo[]>;
-  getTodo(id: string): Promise<Todo | undefined>;
-  createTodo(todo: InsertTodo): Promise<Todo>;
-  updateTodo(id: string, updates: Partial<InsertTodo>): Promise<Todo | undefined>;
-  deleteTodo(id: string): Promise<boolean>;
+  getTodos(userId: string): Promise<Todo[]>;
+  getTodo(id: string, userId: string): Promise<Todo | undefined>;
+  createTodo(userId: string, todo: Omit<InsertTodo, 'userId'>): Promise<Todo>;
+  updateTodo(id: string, userId: string, updates: Partial<Omit<InsertTodo, 'userId'>>): Promise<Todo | undefined>;
+  deleteTodo(id: string, userId: string): Promise<boolean>;
 
-  getQuestionCountsByDate(date: string): Promise<QuestionCount[]>;
-  getQuestionCountsByDateRange(startDate: string, endDate: string): Promise<QuestionCount[]>;
-  upsertQuestionCount(data: InsertQuestionCount): Promise<QuestionCount>;
+  getQuestionCountsByDate(userId: string, date: string): Promise<QuestionCount[]>;
+  getQuestionCountsByDateRange(userId: string, startDate: string, endDate: string): Promise<QuestionCount[]>;
+  upsertQuestionCount(userId: string, data: Omit<InsertQuestionCount, 'userId'>): Promise<QuestionCount>;
 
-  getTimerSessionsByDate(date: string): Promise<TimerSession[]>;
-  getTimerSessionsByDateRange(startDate: string, endDate: string): Promise<TimerSession[]>;
+  getTimerSessionsByDate(userId: string, date: string): Promise<TimerSession[]>;
+  getTimerSessionsByDateRange(userId: string, startDate: string, endDate: string): Promise<TimerSession[]>;
   createTimerSession(session: InsertTimerSession): Promise<TimerSession>;
 
   getStreak(userId: string): Promise<number>;
@@ -78,18 +78,20 @@ export class MemStorage implements IStorage {
     return user;
   }
 
-  async getTodos(): Promise<Todo[]> {
-    return Array.from(this.todos.values());
+  async getTodos(userId: string): Promise<Todo[]> {
+    return Array.from(this.todos.values()).filter(t => t.userId === userId);
   }
 
-  async getTodo(id: string): Promise<Todo | undefined> {
-    return this.todos.get(id);
+  async getTodo(id: string, userId: string): Promise<Todo | undefined> {
+    const todo = this.todos.get(id);
+    return todo && todo.userId === userId ? todo : undefined;
   }
 
-  async createTodo(insertTodo: InsertTodo): Promise<Todo> {
+  async createTodo(userId: string, insertTodo: Omit<InsertTodo, 'userId'>): Promise<Todo> {
     const id = randomUUID();
     const todo: Todo = {
       id,
+      userId,
       title: insertTodo.title,
       completed: insertTodo.completed ?? false,
     };
@@ -99,31 +101,35 @@ export class MemStorage implements IStorage {
 
   async updateTodo(
     id: string,
-    updates: Partial<InsertTodo>,
+    userId: string,
+    updates: Partial<Omit<InsertTodo, 'userId'>>,
   ): Promise<Todo | undefined> {
     const todo = this.todos.get(id);
-    if (!todo) return undefined;
+    if (!todo || todo.userId !== userId) return undefined;
 
     const updatedTodo = { ...todo, ...updates };
     this.todos.set(id, updatedTodo);
     return updatedTodo;
   }
 
-  async deleteTodo(id: string): Promise<boolean> {
+  async deleteTodo(id: string, userId: string): Promise<boolean> {
+    const todo = this.todos.get(id);
+    if (!todo || todo.userId !== userId) return false;
     return this.todos.delete(id);
   }
 
-  async getQuestionCountsByDate(date: string): Promise<QuestionCount[]> {
+  async getQuestionCountsByDate(userId: string, date: string): Promise<QuestionCount[]> {
     return Array.from(this.questionCounts.values()).filter(
-      (qc) => qc.date === date,
+      (qc) => qc.userId === userId && qc.date === date,
     );
   }
 
   async upsertQuestionCount(
-    data: InsertQuestionCount,
+    userId: string,
+    data: Omit<InsertQuestionCount, 'userId'>,
   ): Promise<QuestionCount> {
     const existing = Array.from(this.questionCounts.values()).find(
-      (qc) => qc.subject === data.subject && qc.date === data.date,
+      (qc) => qc.userId === userId && qc.subject === data.subject && qc.date === data.date,
     );
 
     if (existing) {
@@ -138,6 +144,7 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const questionCount: QuestionCount = {
       id,
+      userId,
       subject: data.subject,
       date: data.date,
       count: data.count ?? 0,
@@ -146,35 +153,39 @@ export class MemStorage implements IStorage {
     return questionCount;
   }
 
-  async getTimerSessionsByDate(date: string): Promise<TimerSession[]> {
-    return Array.from(this.timerSessions.values()).filter((ts) => ts.date === date);
+  async getTimerSessionsByDate(userId: string, date: string): Promise<TimerSession[]> {
+    return Array.from(this.timerSessions.values()).filter(
+      (ts) => ts.userId === userId && ts.date === date
+    );
   }
 
   async getQuestionCountsByDateRange(
+    userId: string,
     startDate: string,
     endDate: string,
   ): Promise<QuestionCount[]> {
     return Array.from(this.questionCounts.values()).filter(
-      (qc) => qc.date >= startDate && qc.date <= endDate,
+      (qc) => qc.userId === userId && qc.date >= startDate && qc.date <= endDate,
     );
   }
 
   async getTimerSessionsByDateRange(
+    userId: string,
     startDate: string,
     endDate: string,
   ): Promise<TimerSession[]> {
     return Array.from(this.timerSessions.values()).filter(
-      (ts) => ts.date >= startDate && ts.date <= endDate,
+      (ts) => ts.userId === userId && ts.date >= startDate && ts.date <= endDate,
     );
   }
 
   async createTimerSession(
-    insertSession: InsertTimerSession & { userId?: string },
+    insertSession: InsertTimerSession,
   ): Promise<TimerSession> {
     const id = randomUUID();
     const session: TimerSession = {
       id,
-      userId: insertSession.userId ?? null,
+      userId: insertSession.userId,
       duration: insertSession.duration,
       subject: insertSession.subject,
       date: insertSession.date,
@@ -299,76 +310,82 @@ export class DbStorage implements IStorage {
     return result[0];
   }
 
-  async getTodos(): Promise<Todo[]> {
-    return await this.db.select().from(schema.todos);
+  async getTodos(userId: string): Promise<Todo[]> {
+    return await this.db
+      .select()
+      .from(schema.todos)
+      .where(eq(schema.todos.userId, userId));
   }
 
-  async getTodo(id: string): Promise<Todo | undefined> {
+  async getTodo(id: string, userId: string): Promise<Todo | undefined> {
     const result = await this.db
       .select()
       .from(schema.todos)
-      .where(eq(schema.todos.id, id))
+      .where(and(eq(schema.todos.id, id), eq(schema.todos.userId, userId)))
       .limit(1);
     return result[0];
   }
 
-  async createTodo(insertTodo: InsertTodo): Promise<Todo> {
+  async createTodo(userId: string, insertTodo: Omit<InsertTodo, 'userId'>): Promise<Todo> {
     const result = await this.db
       .insert(schema.todos)
-      .values(insertTodo)
+      .values({ ...insertTodo, userId })
       .returning();
     return result[0];
   }
 
   async updateTodo(
     id: string,
-    updates: Partial<InsertTodo>,
+    userId: string,
+    updates: Partial<Omit<InsertTodo, 'userId'>>,
   ): Promise<Todo | undefined> {
     const result = await this.db
       .update(schema.todos)
       .set(updates)
-      .where(eq(schema.todos.id, id))
+      .where(and(eq(schema.todos.id, id), eq(schema.todos.userId, userId)))
       .returning();
     return result[0];
   }
 
-  async deleteTodo(id: string): Promise<boolean> {
+  async deleteTodo(id: string, userId: string): Promise<boolean> {
     const result = await this.db
       .delete(schema.todos)
-      .where(eq(schema.todos.id, id))
+      .where(and(eq(schema.todos.id, id), eq(schema.todos.userId, userId)))
       .returning();
     return result.length > 0;
   }
 
-  async getQuestionCountsByDate(date: string): Promise<QuestionCount[]> {
+  async getQuestionCountsByDate(userId: string, date: string): Promise<QuestionCount[]> {
     return await this.db
       .select()
       .from(schema.questionCounts)
-      .where(eq(schema.questionCounts.date, date));
+      .where(and(eq(schema.questionCounts.userId, userId), eq(schema.questionCounts.date, date)));
   }
 
   async upsertQuestionCount(
-    data: InsertQuestionCount,
+    userId: string,
+    data: Omit<InsertQuestionCount, 'userId'>,
   ): Promise<QuestionCount> {
     const result = await this.db
       .insert(schema.questionCounts)
-      .values(data)
+      .values({ ...data, userId })
       .onConflictDoUpdate({
-        target: [schema.questionCounts.subject, schema.questionCounts.date],
+        target: [schema.questionCounts.userId, schema.questionCounts.subject, schema.questionCounts.date],
         set: { count: data.count },
       })
       .returning();
     return result[0];
   }
 
-  async getTimerSessionsByDate(date: string): Promise<TimerSession[]> {
+  async getTimerSessionsByDate(userId: string, date: string): Promise<TimerSession[]> {
     return await this.db
       .select()
       .from(schema.timerSessions)
-      .where(eq(schema.timerSessions.date, date));
+      .where(and(eq(schema.timerSessions.userId, userId), eq(schema.timerSessions.date, date)));
   }
 
   async getQuestionCountsByDateRange(
+    userId: string,
     startDate: string,
     endDate: string,
   ): Promise<QuestionCount[]> {
@@ -377,6 +394,7 @@ export class DbStorage implements IStorage {
       .from(schema.questionCounts)
       .where(
         and(
+          eq(schema.questionCounts.userId, userId),
           sql`${schema.questionCounts.date} >= ${startDate}`,
           sql`${schema.questionCounts.date} <= ${endDate}`,
         ),
@@ -384,6 +402,7 @@ export class DbStorage implements IStorage {
   }
 
   async getTimerSessionsByDateRange(
+    userId: string,
     startDate: string,
     endDate: string,
   ): Promise<TimerSession[]> {
@@ -392,6 +411,7 @@ export class DbStorage implements IStorage {
       .from(schema.timerSessions)
       .where(
         and(
+          eq(schema.timerSessions.userId, userId),
           sql`${schema.timerSessions.date} >= ${startDate}`,
           sql`${schema.timerSessions.date} <= ${endDate}`,
         ),
