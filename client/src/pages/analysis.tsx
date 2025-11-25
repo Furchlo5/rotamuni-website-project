@@ -98,8 +98,10 @@ export default function AnalysisPage() {
     queryKey: ["/api/stats", startDate, endDate],
     queryFn: async () => {
       const response = await fetch(
-        `/api/stats?startDate=${startDate}&endDate=${endDate}`
+        `/api/stats?startDate=${startDate}&endDate=${endDate}`,
+        { credentials: "include" }
       );
+      if (response.status === 401) return { questionCounts: [], timerSessions: [] };
       if (!response.ok) throw new Error("Failed to fetch stats");
       return response.json();
     },
