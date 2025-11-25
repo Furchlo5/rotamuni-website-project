@@ -2,12 +2,29 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CheckCircle2, BarChart3, Clock, ListTodo } from "lucide-react";
 import logoImage from "@assets/Screenshot 2025-11-25 at 09.35 Background Removed.14_1764052549610.png";
+import backgroundVideo from "@assets/main_video_1764052786108.mp4";
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-[#0a1628]">
+    <div className="min-h-screen bg-[#0a1628] relative">
+      {/* Background Video */}
+      <div className="fixed inset-0 z-0 overflow-hidden">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute min-w-full min-h-full object-cover"
+          data-testid="video-background"
+        >
+          <source src={backgroundVideo} type="video/mp4" />
+        </video>
+        {/* Dark overlay for better text readability */}
+        <div className="absolute inset-0 bg-[#0a1628]/70" />
+      </div>
+
       {/* Hero Section */}
-      <div className="relative overflow-hidden">
+      <div className="relative z-10 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-32">
           <div className="text-center">
             <div className="flex justify-center mb-8">
@@ -49,7 +66,7 @@ export default function Landing() {
       </div>
 
       {/* Features Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <h2 className="text-3xl font-bold text-white text-center mb-12">
           Özellikler
         </h2>
@@ -117,7 +134,7 @@ export default function Landing() {
       </div>
 
       {/* CTA Section */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <Card className="bg-gradient-to-r from-[#14b8a6] to-[#0891b2] border-0 p-12 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">
             Hazır mısınız?
