@@ -72,12 +72,14 @@ export const upsertUserSchema = createInsertSchema(users).pick({
 
 export const insertTodoSchema = createInsertSchema(todos).omit({
   id: true,
+  userId: true,
 });
 
 export const updateTodoSchema = insertTodoSchema.partial();
 
 export const insertQuestionCountSchema = createInsertSchema(questionCounts).omit({
   id: true,
+  userId: true,
 });
 
 export const insertTimerSessionSchema = createInsertSchema(timerSessions).omit({

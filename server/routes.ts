@@ -41,7 +41,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/todos", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.claims?.sub;
-      const data = insertTodoSchema.omit({ userId: true }).parse(req.body);
+      const data = insertTodoSchema.parse(req.body);
       const todo = await storage.createTodo(userId, data);
       res.json(todo);
     } catch (error) {
@@ -58,7 +58,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user?.claims?.sub;
       const { id } = req.params;
-      const updates = updateTodoSchema.omit({ userId: true }).parse(req.body);
+      const updates = updateTodoSchema.parse(req.body);
       const todo = await storage.updateTodo(id, userId, updates);
       if (!todo) {
         res.status(404).json({ error: "Todo not found" });
@@ -103,7 +103,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/question-counts", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.claims?.sub;
-      const data = insertQuestionCountSchema.omit({ userId: true }).parse(req.body);
+      const data = insertQuestionCountSchema.parse(req.body);
       const count = await storage.upsertQuestionCount(userId, data);
       res.json(count);
     } catch (error) {
