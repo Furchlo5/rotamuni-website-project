@@ -1,5 +1,13 @@
 import { Button } from "@/components/ui/button";
-import { Flame } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Flame, User as UserIcon, LogOut, ChevronDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import logoImage from "@assets/Screenshot 2025-11-25 at 09.35 Background Removed.14_1764052549610.png";
 import type { User } from "@shared/schema";
@@ -47,28 +55,71 @@ export function Navbar({ isAuthenticated, user }: NavbarProps) {
 
           <div className="flex items-center gap-3">
             {isAuthenticated && user ? (
-              <>
-                {user.profileImageUrl && (
-                  <img 
-                    src={user.profileImageUrl} 
-                    alt="Profile" 
-                    className="h-8 w-8 rounded-full object-cover"
-                    data-testid="img-profile"
-                  />
-                )}
-                <span className="text-white/80 text-sm hidden sm:inline">
-                  {user.firstName || user.email}
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => window.location.href = "/api/logout"}
-                  className="border-[#14b8a6] text-[#14b8a6] hover:bg-[#14b8a6]/10"
-                  data-testid="button-logout"
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    className="flex items-center gap-2 px-3 py-2 h-auto hover:bg-white/10 rounded-lg"
+                  >
+                    {user.profileImageUrl ? (
+                      <img 
+                        src={user.profileImageUrl} 
+                        alt="Profil" 
+                        className="h-8 w-8 rounded-full object-cover border-2 border-[#14b8a6]"
+                        data-testid="img-profile"
+                      />
+                    ) : (
+                      <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#14b8a6] to-[#0891b2] flex items-center justify-center">
+                        <UserIcon className="h-4 w-4 text-white" />
+                      </div>
+                    )}
+                    <span className="text-white/90 text-sm hidden sm:inline max-w-[120px] truncate">
+                      {user.firstName || user.email?.split('@')[0] || 'Kullanıcı'}
+                    </span>
+                    <ChevronDown className="h-4 w-4 text-white/60" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent 
+                  align="end" 
+                  className="w-64 bg-[#1e3a5f] border-[#2d4a6f] text-white"
                 >
-                  Çıkış Yap
-                </Button>
-              </>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-2 py-2">
+                      <div className="flex items-center gap-3">
+                        {user.profileImageUrl ? (
+                          <img 
+                            src={user.profileImageUrl} 
+                            alt="Profil" 
+                            className="h-10 w-10 rounded-full object-cover border-2 border-[#14b8a6]"
+                          />
+                        ) : (
+                          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#14b8a6] to-[#0891b2] flex items-center justify-center">
+                            <UserIcon className="h-5 w-5 text-white" />
+                          </div>
+                        )}
+                        <div className="flex flex-col">
+                          <p className="text-sm font-medium text-white">
+                            {user.firstName && user.lastName 
+                              ? `${user.firstName} ${user.lastName}` 
+                              : user.firstName || 'Kullanıcı'}
+                          </p>
+                          <p className="text-xs text-white/60 truncate max-w-[180px]">
+                            {user.email || 'E-posta yok'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-[#2d4a6f]" />
+                  <DropdownMenuItem 
+                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10 cursor-pointer focus:bg-red-500/10 focus:text-red-300"
+                    onClick={() => window.location.href = "/api/logout"}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Çıkış Yap
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <>
                 <Button
