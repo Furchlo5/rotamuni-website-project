@@ -6,6 +6,7 @@ import {
   updateTodoSchema,
   insertQuestionCountSchema,
   insertTimerSessionSchema,
+  insertNetResultSchema,
 } from "@shared/schema";
 import { z } from "zod";
 import { setupAuth, isAuthenticated } from "./replitAuth";
@@ -189,6 +190,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(data);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch monthly study data" });
+    }
+  });
+
+  app.get("/api/net-results", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      const results = await storage.getNetResults(userId);
+      res.json(results);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch net results" });
+    }
+  });
+
+  app.post("/api/net-results", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      const data = insertNetResultSchema.parse({ ...req.body, userId });
+      const result = await storage.createNetResult(data);
+      res.json(result);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: error.errors });
+      } else {
+        console.error("Failed to create net result:", error);
+        res.status(500).json({ error: "Failed to create net result" });
+      }
+    }
+  });
+
+  app.delete("/api/net-results/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      const { id } = req.params;
+      const success = await storage.deleteNetResult(id, userId);
+      if (!success) {
+        res.status(404).json({ error: "Net result not found" });
+        return;
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete net result" });
     }
   });
 

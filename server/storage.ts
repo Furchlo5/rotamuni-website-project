@@ -7,6 +7,8 @@ import {
   type InsertQuestionCount,
   type TimerSession,
   type InsertTimerSession,
+  type NetResult,
+  type InsertNetResult,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 
@@ -35,6 +37,10 @@ export interface IStorage {
 
   getStreak(userId: string): Promise<number>;
   getMonthlyStudyData(userId: string, year: number, month: number): Promise<DailyStudyData[]>;
+
+  getNetResults(userId: string): Promise<NetResult[]>;
+  createNetResult(data: InsertNetResult): Promise<NetResult>;
+  deleteNetResult(id: string, userId: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -42,12 +48,14 @@ export class MemStorage implements IStorage {
   private todos: Map<string, Todo>;
   private questionCounts: Map<string, QuestionCount>;
   private timerSessions: Map<string, TimerSession>;
+  private netResults: Map<string, NetResult>;
 
   constructor() {
     this.users = new Map();
     this.todos = new Map();
     this.questionCounts = new Map();
     this.timerSessions = new Map();
+    this.netResults = new Map();
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -219,6 +227,35 @@ export class MemStorage implements IStorage {
       date,
       totalSeconds,
     }));
+  }
+
+  async getNetResults(userId: string): Promise<NetResult[]> {
+    return Array.from(this.netResults.values()).filter(r => r.userId === userId);
+  }
+
+  async createNetResult(data: InsertNetResult): Promise<NetResult> {
+    const id = randomUUID();
+    const result: NetResult = {
+      id,
+      userId: data.userId,
+      examType: data.examType,
+      aytField: data.aytField ?? null,
+      date: data.date,
+      publisher: data.publisher,
+      totalNet: data.totalNet,
+      subjectScores: data.subjectScores,
+      createdAt: new Date(),
+    };
+    this.netResults.set(id, result);
+    return result;
+  }
+
+  async deleteNetResult(id: string, userId: string): Promise<boolean> {
+    const result = this.netResults.get(id);
+    if (result && result.userId === userId) {
+      return this.netResults.delete(id);
+    }
+    return false;
   }
 }
 
@@ -429,6 +466,35 @@ export class DbStorage implements IStorage {
       date: r.date,
       totalSeconds: Number(r.totalSeconds),
     }));
+  }
+
+  async getNetResults(userId: string): Promise<NetResult[]> {
+    return await this.db
+      .select()
+      .from(schema.netResults)
+      .where(eq(schema.netResults.userId, userId))
+      .orderBy(sql`${schema.netResults.date} DESC`);
+  }
+
+  async createNetResult(data: InsertNetResult): Promise<NetResult> {
+    const result = await this.db
+      .insert(schema.netResults)
+      .values(data)
+      .returning();
+    return result[0];
+  }
+
+  async deleteNetResult(id: string, userId: string): Promise<boolean> {
+    const result = await this.db
+      .delete(schema.netResults)
+      .where(
+        and(
+          eq(schema.netResults.id, id),
+          eq(schema.netResults.userId, userId),
+        ),
+      )
+      .returning();
+    return result.length > 0;
   }
 }
 
