@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import logoImage from "@assets/logo_son2_1764011054295.png";
+import logoImage from "@assets/Screenshot 2025-11-25 at 09.35 Background Removed.14_1764052549610.png";
 import type { User } from "@shared/schema";
 
 interface NavbarProps {

@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CheckCircle2, BarChart3, Clock, ListTodo } from "lucide-react";
-import logoImage from "@assets/logo_son2_1764011054295.png";
+import logoImage from "@assets/Screenshot 2025-11-25 at 09.35 Background Removed.14_1764052549610.png";
 
 export default function Landing() {
   return (
