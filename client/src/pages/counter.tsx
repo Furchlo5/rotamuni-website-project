@@ -320,38 +320,47 @@ export default function CounterPage() {
             <Button
               variant="outline"
               size="lg"
-              onClick={() => handleAddToCount(1)}
+              onClick={() => handleAddToCount(25)}
               disabled={updateMutation.isPending}
               className="border-teal-500 text-teal-600 hover:bg-teal-50 dark:border-teal-400 dark:text-teal-400 dark:hover:bg-teal-950 text-lg font-semibold"
             >
-              +1
+              +25
             </Button>
             <Button
               variant="outline"
               size="lg"
-              onClick={() => handleAddToCount(5)}
+              onClick={() => handleAddToCount(50)}
               disabled={updateMutation.isPending}
               className="border-teal-500 text-teal-600 hover:bg-teal-50 dark:border-teal-400 dark:text-teal-400 dark:hover:bg-teal-950 text-lg font-semibold"
             >
-              +5
+              +50
             </Button>
             <Button
               variant="outline"
               size="lg"
-              onClick={() => handleAddToCount(10)}
+              onClick={() => handleAddToCount(100)}
               disabled={updateMutation.isPending}
               className="border-teal-500 text-teal-600 hover:bg-teal-50 dark:border-teal-400 dark:text-teal-400 dark:hover:bg-teal-950 text-lg font-semibold"
             >
-              +10
+              +100
             </Button>
             <Button
               variant="outline"
               size="lg"
-              onClick={() => handleAddToCount(20)}
+              onClick={() => handleAddToCount(150)}
               disabled={updateMutation.isPending}
               className="border-teal-500 text-teal-600 hover:bg-teal-50 dark:border-teal-400 dark:text-teal-400 dark:hover:bg-teal-950 text-lg font-semibold"
             >
-              +20
+              +150
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => handleAddToCount(200)}
+              disabled={updateMutation.isPending}
+              className="border-teal-500 text-teal-600 hover:bg-teal-50 dark:border-teal-400 dark:text-teal-400 dark:hover:bg-teal-950 text-lg font-semibold"
+            >
+              +200
             </Button>
           </div>
 
