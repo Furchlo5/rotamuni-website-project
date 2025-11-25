@@ -37,8 +37,8 @@ export function getSession() {
     saveUninitialized: true, // Must be true for OAuth state storage
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: true, // Always true on Replit (HTTPS)
+      sameSite: 'none', // Required for OAuth cross-site redirects
       maxAge: sessionTtl,
     },
   });
