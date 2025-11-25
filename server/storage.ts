@@ -23,13 +23,13 @@ export interface IStorage {
 
   getTodos(userId: string): Promise<Todo[]>;
   getTodo(id: string, userId: string): Promise<Todo | undefined>;
-  createTodo(userId: string, todo: Omit<InsertTodo, 'userId'>): Promise<Todo>;
-  updateTodo(id: string, userId: string, updates: Partial<Omit<InsertTodo, 'userId'>>): Promise<Todo | undefined>;
+  createTodo(userId: string, todo: InsertTodo): Promise<Todo>;
+  updateTodo(id: string, userId: string, updates: Partial<InsertTodo>): Promise<Todo | undefined>;
   deleteTodo(id: string, userId: string): Promise<boolean>;
 
   getQuestionCountsByDate(userId: string, date: string): Promise<QuestionCount[]>;
   getQuestionCountsByDateRange(userId: string, startDate: string, endDate: string): Promise<QuestionCount[]>;
-  upsertQuestionCount(userId: string, data: Omit<InsertQuestionCount, 'userId'>): Promise<QuestionCount>;
+  upsertQuestionCount(userId: string, data: InsertQuestionCount): Promise<QuestionCount>;
 
   getTimerSessionsByDate(userId: string, date: string): Promise<TimerSession[]>;
   getTimerSessionsByDateRange(userId: string, startDate: string, endDate: string): Promise<TimerSession[]>;
@@ -87,7 +87,7 @@ export class MemStorage implements IStorage {
     return todo && todo.userId === userId ? todo : undefined;
   }
 
-  async createTodo(userId: string, insertTodo: Omit<InsertTodo, 'userId'>): Promise<Todo> {
+  async createTodo(userId: string, insertTodo: InsertTodo): Promise<Todo> {
     const id = randomUUID();
     const todo: Todo = {
       id,
@@ -102,7 +102,7 @@ export class MemStorage implements IStorage {
   async updateTodo(
     id: string,
     userId: string,
-    updates: Partial<Omit<InsertTodo, 'userId'>>,
+    updates: Partial<InsertTodo>,
   ): Promise<Todo | undefined> {
     const todo = this.todos.get(id);
     if (!todo || todo.userId !== userId) return undefined;
@@ -126,7 +126,7 @@ export class MemStorage implements IStorage {
 
   async upsertQuestionCount(
     userId: string,
-    data: Omit<InsertQuestionCount, 'userId'>,
+    data: InsertQuestionCount,
   ): Promise<QuestionCount> {
     const existing = Array.from(this.questionCounts.values()).find(
       (qc) => qc.userId === userId && qc.subject === data.subject && qc.date === data.date,
@@ -326,7 +326,7 @@ export class DbStorage implements IStorage {
     return result[0];
   }
 
-  async createTodo(userId: string, insertTodo: Omit<InsertTodo, 'userId'>): Promise<Todo> {
+  async createTodo(userId: string, insertTodo: InsertTodo): Promise<Todo> {
     const result = await this.db
       .insert(schema.todos)
       .values({ ...insertTodo, userId })
@@ -337,7 +337,7 @@ export class DbStorage implements IStorage {
   async updateTodo(
     id: string,
     userId: string,
-    updates: Partial<Omit<InsertTodo, 'userId'>>,
+    updates: Partial<InsertTodo>,
   ): Promise<Todo | undefined> {
     const result = await this.db
       .update(schema.todos)
@@ -364,7 +364,7 @@ export class DbStorage implements IStorage {
 
   async upsertQuestionCount(
     userId: string,
-    data: Omit<InsertQuestionCount, 'userId'>,
+    data: InsertQuestionCount,
   ): Promise<QuestionCount> {
     const result = await this.db
       .insert(schema.questionCounts)
