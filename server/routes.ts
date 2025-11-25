@@ -12,10 +12,8 @@ import { z } from "zod";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Setup Replit Auth
   await setupAuth(app);
 
-  // Auth endpoint - Get current user (not protected, returns null if not authenticated)
   app.get('/api/auth/user', async (req: any, res) => {
     try {
       if (!req.isAuthenticated() || !req.user?.claims?.sub) {
@@ -29,19 +27,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch user" });
     }
   });
-  app.get("/api/todos", async (_req, res) => {
+
+  app.get("/api/todos", isAuthenticated, async (req: any, res) => {
     try {
-      const todos = await storage.getTodos();
+      const userId = req.user?.claims?.sub;
+      const todos = await storage.getTodos(userId);
       res.json(todos);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch todos" });
     }
   });
 
-  app.post("/api/todos", async (req, res) => {
+  app.post("/api/todos", isAuthenticated, async (req: any, res) => {
     try {
-      const data = insertTodoSchema.parse(req.body);
-      const todo = await storage.createTodo(data);
+      const userId = req.user?.claims?.sub;
+      const data = insertTodoSchema.omit({ userId: true }).parse(req.body);
+      const todo = await storage.createTodo(userId, data);
       res.json(todo);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -53,11 +54,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/todos/:id", async (req, res) => {
+  app.patch("/api/todos/:id", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user?.claims?.sub;
       const { id } = req.params;
-      const updates = updateTodoSchema.parse(req.body);
-      const todo = await storage.updateTodo(id, updates);
+      const updates = updateTodoSchema.omit({ userId: true }).parse(req.body);
+      const todo = await storage.updateTodo(id, userId, updates);
       if (!todo) {
         res.status(404).json({ error: "Todo not found" });
         return;
@@ -72,10 +74,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/todos/:id", async (req, res) => {
+  app.delete("/api/todos/:id", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user?.claims?.sub;
       const { id } = req.params;
-      const success = await storage.deleteTodo(id);
+      const success = await storage.deleteTodo(id, userId);
       if (!success) {
         res.status(404).json({ error: "Todo not found" });
         return;
@@ -86,20 +89,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/question-counts/:date", async (req, res) => {
+  app.get("/api/question-counts/:date", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user?.claims?.sub;
       const { date } = req.params;
-      const counts = await storage.getQuestionCountsByDate(date);
+      const counts = await storage.getQuestionCountsByDate(userId, date);
       res.json(counts);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch question counts" });
     }
   });
 
-  app.post("/api/question-counts", async (req, res) => {
+  app.post("/api/question-counts", isAuthenticated, async (req: any, res) => {
     try {
-      const data = insertQuestionCountSchema.parse(req.body);
-      const count = await storage.upsertQuestionCount(data);
+      const userId = req.user?.claims?.sub;
+      const data = insertQuestionCountSchema.omit({ userId: true }).parse(req.body);
+      const count = await storage.upsertQuestionCount(userId, data);
       res.json(count);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -110,10 +115,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/timer-sessions/:date", async (req, res) => {
+  app.get("/api/timer-sessions/:date", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user?.claims?.sub;
       const { date } = req.params;
-      const sessions = await storage.getTimerSessionsByDate(date);
+      const sessions = await storage.getTimerSessionsByDate(userId, date);
       res.json(sessions);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch timer sessions" });
@@ -126,8 +132,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!userId) {
         return res.status(401).json({ error: "Not authenticated" });
       }
-      const data = insertTimerSessionSchema.parse(req.body);
-      const session = await storage.createTimerSession({ ...data, userId });
+      const data = insertTimerSessionSchema.parse({ ...req.body, userId });
+      const session = await storage.createTimerSession(data);
       res.json(session);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -138,8 +144,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/stats", async (req, res) => {
+  app.get("/api/stats", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user?.claims?.sub;
       const { startDate, endDate } = req.query;
       
       if (!startDate || !endDate) {
@@ -148,8 +155,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const [questionCounts, timerSessions] = await Promise.all([
-        storage.getQuestionCountsByDateRange(startDate as string, endDate as string),
-        storage.getTimerSessionsByDateRange(startDate as string, endDate as string),
+        storage.getQuestionCountsByDateRange(userId, startDate as string, endDate as string),
+        storage.getTimerSessionsByDateRange(userId, startDate as string, endDate as string),
       ]);
 
       res.json({ questionCounts, timerSessions });
