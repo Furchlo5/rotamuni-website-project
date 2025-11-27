@@ -186,4 +186,4 @@ Bu proje MIT lisansı altında lisanslanmıştır.
 
 Projeyi beğendiyseniz yıldız vermeyi unutmayın!
 
-Sorularınız için: https://github.com/Furchlo5/rotamuni/issues
+[Hata Bildir veya İstekte Bulun](https://github.com/Furchlo5/rotamuni-website-project/issues)
