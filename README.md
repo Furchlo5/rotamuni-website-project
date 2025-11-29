@@ -3,7 +3,6 @@
 
 YKS sınavına hazırlanan öğrenciler için kapsamlı bir çalışma takip uygulaması. To-do list, soru sayacı, çalışma zamanlayıcısı ve detaylı analiz grafikleri ile çalışmalarınızı verimli bir şekilde yönetin.
 
-RotamUni(./attached_assets/logo.png)
 
 ## Özellikler
 
@@ -173,7 +172,7 @@ Bu proje MIT lisansı altında lisanslanmıştır.
 
 ## Geliştirici
 
-**YKS Yol Arkadaşım** - YKS'ye hazırlanan öğrencilere yardımcı olmak için geliştirilmiştir.
+**RotamUni** - YKS'ye hazırlanan öğrencilere yardımcı olmak için geliştirilmiştir.
 
 ## Teşekkürler
 
